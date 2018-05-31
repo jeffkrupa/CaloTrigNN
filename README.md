@@ -1,4 +1,6 @@
 # CaloTrigNN
+cd $CMSSW_BASE/src
+
 git clone https://github.com/violatingcp/CaloTrigNN.git
 
 cd CaloTrigNN
