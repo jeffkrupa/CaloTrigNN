@@ -1,0 +1,10 @@
+<use   name="root"/>
+<use   name="FWCore/Framework"/>
+<use   name="FWCore/ParameterSet"/>
+<use   name="SimCalorimetry/HcalTrigPrimAlgos"/>
+<use   name="DataFormats/L1GlobalTrigger"/>
+<use   name="SimCalorimetry/HcalSimAlgos"/>
+<use   name="SimCalorimetry/CaloSimAlgos"/>
+<use   name="Geometry/CaloGeometry"/>
+<use   name="CaloTrigNN/DataFormats"/>
+<flags   EDM_PLUGIN="1"/>
