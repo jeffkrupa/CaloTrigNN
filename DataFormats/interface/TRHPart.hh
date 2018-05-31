@@ -14,7 +14,8 @@ namespace baconhep
 	rho(0),ieta(0),iphi(0),depth(0),
 	time(0),timefalling(0),
 	x(0),y(0),z(0),
-	genE(0),genEDepth(0),genETime(0)
+	genE(0),genEDepth(0),genETime(0),
+	samples(0),soi(0),inPedAvg(0),gain(0)
     {}
     ~TRHPart(){}
 
@@ -23,6 +24,14 @@ namespace baconhep
     float time,timefalling;
     float x,y,z;
     float genE,genEDepth,genETime;
+    float samples,soi,inPedAvg,gain;
+    std::vector<float> ts;
+    std::vector<float> raw;
+    std::vector<float> ped;
+    std::vector<float> inNoiseADC;
+    std::vector<float> inPedestal;
+    std::vector<float> inNoisePhoto;
+    std::vector<float> inputTDC;
     ClassDef(TRHPart,4)
   };
 }

@@ -20,9 +20,11 @@ using namespace baconhep;
 
 //--------------------------------------------------------------------------------------------------
 FillerRH::FillerRH(const edm::ParameterSet &iConfig,edm::ConsumesCollector && iC):
-  fRHName      (iConfig.getUntrackedParameter<edm::InputTag>("edmRecHitName"))
+  fRHName      (iConfig.getUntrackedParameter<edm::InputTag>("edmRecHitName")),
+  fChanInfoName(iConfig.getUntrackedParameter<edm::InputTag>("edmChanInfoName"))
 {
-  fTokRH = iC.consumes<HBHERecHitCollection>(fRHName);
+  fTokRH       = iC.consumes<HBHERecHitCollection>(fRHName);
+  fTokChanInfo = iC.consumes<HBHEChannelInfoCollection>(fChanInfoName);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -44,6 +46,11 @@ void FillerRH::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
   iEvent.getByToken(fTokRH,hRecHitHCAL);
   recHitHCAL = hRecHitHCAL.product();
 
+  const HBHEChannelInfoCollection *channelInfo   = 0;
+  edm::Handle<HBHEChannelInfoCollection> hChannelInfo;
+  iEvent.getByToken(fTokChanInfo, hChannelInfo);
+  channelInfo = hChannelInfo.product();
+  
   TClonesArray &rArray = *array;
   int pId = 0; 
   for(HBHERecHitCollection::const_iterator itRH = recHitHCAL->begin(); itRH != recHitHCAL->end(); itRH++) {
@@ -76,6 +83,7 @@ void FillerRH::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
     pRH->z      = pCellPos.z();
     HcalDetId pId = itRH->id();
     fillGen(pId,itRH->id().ieta(),itRH->id().iphi(),pRH,iSimHits,iRecNumber);
+    fillTS(pId,pRH,channelInfo);
   } 
 }
 void FillerRH::fillGen(HcalDetId &iDetId,int iIEta,int iIPhi,baconhep::TRHPart *iHcal,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber) { 
@@ -111,3 +119,39 @@ void FillerRH::fillGen(HcalDetId &iDetId,int iIEta,int iIPhi,baconhep::TRHPart *
   iHcal->genEDepth = maxDepth;
   iHcal->genETime  = sHitTime;
 }
+void FillerRH::fillTS(HcalDetId &iDetId,baconhep::TRHPart *iHcal,const HBHEChannelInfoCollection *iChannelInfo) { 
+  iHcal->ts.clear();
+  iHcal->raw.clear();
+  iHcal->ped.clear();
+  iHcal->inNoiseADC.clear();
+  iHcal->inPedestal.clear();
+  iHcal->inNoisePhoto.clear();
+  iHcal->inputTDC.clear();
+  for (HBHEChannelInfoCollection::const_iterator iter = iChannelInfo->begin(); iter != iChannelInfo->end(); iter++) {
+    const HBHEChannelInfo& pChannel(*iter);
+    const HcalDetId        pDetId = pChannel.id();
+    if(pDetId != iDetId) continue; 
+    iHcal->samples  = pChannel.nSamples();
+    iHcal->soi      = pChannel.soi();
+    iHcal->inPedAvg = 0.25*( pChannel.tsPedestalWidth(0)*pChannel.tsPedestalWidth(0)+
+			     pChannel.tsPedestalWidth(1)*pChannel.tsPedestalWidth(1)+
+			     pChannel.tsPedestalWidth(2)*pChannel.tsPedestalWidth(2)+
+			     pChannel.tsPedestalWidth(3)*pChannel.tsPedestalWidth(3) );
+    iHcal->gain     = pChannel.tsGain(0);
+    for (unsigned int iTS=0; iTS<pChannel.nSamples(); ++iTS) {
+      double raw = pChannel.tsRawCharge(iTS);
+      double ped = pChannel.tsPedestal(iTS);
+      iHcal->ts        .push_back(iTS);
+      iHcal->raw       .push_back(raw);
+      iHcal->ped       .push_back(ped);
+      iHcal->inNoiseADC.push_back((1./sqrt(12))*pChannel.tsDFcPerADC(iTS));
+      iHcal->inPedestal.push_back(pChannel.tsPedestalWidth(iTS));    
+      if ( (raw-ped)>pChannel.tsPedestalWidth(iTS)) {iHcal->inNoisePhoto.push_back(sqrt((raw-ped)*pChannel.fcByPE()));} 
+      else {iHcal->inNoisePhoto.push_back(0); }
+      if (pChannel.hasTimeInfo()) {iHcal->inputTDC.push_back(pChannel.tsRiseTime(iTS));}
+      else {iHcal->inputTDC.push_back(-1); }
+    }
+  }
+
+}
+

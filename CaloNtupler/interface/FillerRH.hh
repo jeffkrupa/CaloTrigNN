@@ -30,12 +30,15 @@ class FillerRH
 	      const edm::Event   &iEvent,const edm::EventSetup &iSetup,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber);  // event info
 
     void fillGen(HcalDetId &iDetId,int iIEta,int iIPhi,baconhep::TRHPart *iHcal,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber);
-   
+    void fillTS (HcalDetId &iDetId,baconhep::TRHPart *iHcal,const HBHEChannelInfoCollection *iChannelInfo);   
+
   protected:
     // EDM object collection names
     edm::InputTag fRHName;
+    edm::InputTag fChanInfoName;
     const CaloSubdetectorGeometry *fHCAL;
     edm::EDGetTokenT<HBHERecHitCollection> fTokRH;
+    edm::EDGetTokenT<HBHEChannelInfoCollection> fTokChanInfo;
     HcalSimParameterMap fSimParameterMap;
     CaloHitResponse* fResponse;
 };

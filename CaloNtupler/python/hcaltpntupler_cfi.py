@@ -41,6 +41,7 @@ simHcalTriggerPrimitiveNtuple = cms.EDProducer("HcalTrigPrimDigiNtupler",
     #edmRecHitName = cms.InputTag("hbheprerecoM2"),
     #edmRecHitName = cms.InputTag("hbheprerecoM3"),
     #edmRecHitName = cms.InputTag("hbheprerecoMahi"),
+    edmChanInfoName = cms.untracked.InputTag("hbheprereco"),                                           
     InputTagFEDRaw = cms.InputTag("rawDataCollector"),
     RunZS = cms.bool(False),
     FrontEndFormatError = cms.bool(False), # Front End Format Error, for real data only

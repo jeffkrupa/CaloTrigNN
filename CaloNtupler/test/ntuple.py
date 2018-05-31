@@ -22,7 +22,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
 
-process.hbheprereco.saveInfos = cms.bool(False)
+process.hbheprereco.saveInfos = cms.bool(True)
 process.hbheprerecoMahi = process.hbheprereco.clone()
 process.hbheprerecoMahi.algorithm.__setattr__('useMahi',cms.bool(True))
 process.hbheprerecoMahi.algorithm.__setattr__('useM2',cms.bool(False))
