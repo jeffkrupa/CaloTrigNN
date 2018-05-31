@@ -8,7 +8,9 @@
 #include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
 #include "DataFormats/FEDRawData/interface/FEDRawDataCollection.h"
 #include "CaloTrigNN/CaloNtupler/interface/HcalNtuple.h"
+#include "CaloTrigNN/CaloNtupler/interface/FillerRH.hh"
 #include "CaloTrigNN/DataFormats/interface/THcalDep.hh"
+#include "CaloTrigNN/DataFormats/interface/TRHPart.hh"
 #include <vector>
 #include "TFile.h"
 #include "TTree.h"
@@ -18,7 +20,7 @@ class HcalTrigPrimDigiNtupler : public edm::stream::EDProducer<> {
 public:
 
   explicit HcalTrigPrimDigiNtupler(const edm::ParameterSet& ps);
-  ~HcalTrigPrimDigiNtupler() override { endJob(); delete fHcalArr;}
+  ~HcalTrigPrimDigiNtupler() override { endJob(); delete fHcalArr; delete fRHParArr; delete fFillerRH;}
 
   /**Produces the EDM products,*/
   void produce(edm::Event& e, const edm::EventSetup& c) override;
@@ -26,6 +28,7 @@ public:
   
 private:
   HcalNtuple fNtuple;
+  FillerRH  *fFillerRH;
 
   /// input tags for HCAL digis
   std::vector<edm::InputTag> fInputLabel;
@@ -47,6 +50,7 @@ private:
   TFile *fFile;
   TTree *fTree;
   TClonesArray *fHcalArr;
+  TClonesArray *fRHParArr;
 };
 
 #endif

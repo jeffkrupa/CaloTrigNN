@@ -66,7 +66,6 @@ process.configurationMetadata = cms.untracked.PSet(
 )
 
 # Output definition
-
 process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
     dataset = cms.untracked.PSet(
         dataTier = cms.untracked.string('GEN-SIM-DIGI-RAW'),
@@ -84,7 +83,6 @@ process.mix.digitizers = cms.PSet(process.theDigitizersValid)
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2018_realistic', '')
 
-# Path and EndPath definitions
 process.digitisation_step = cms.Path(process.pdigi_valid)
 process.L1simulation_step = cms.Path(process.SimL1Emulator)
 process.digi2raw_step = cms.Path(process.DigiToRaw)

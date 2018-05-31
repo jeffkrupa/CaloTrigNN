@@ -28,7 +28,7 @@ simHcalTriggerPrimitiveNtuple = cms.EDProducer("HcalTrigPrimDigiNtupler",
     MinSignalThreshold = cms.uint32(0), # For HF PMT veto
     PMTNoiseThreshold = cms.uint32(0),  # For HF PMT veto
     LSConfig=LSParameter,
-
+                                               
     upgradeHF = cms.bool(True),
     upgradeHB = cms.bool(False),
     upgradeHE = cms.bool(True),
@@ -37,6 +37,10 @@ simHcalTriggerPrimitiveNtuple = cms.EDProducer("HcalTrigPrimDigiNtupler",
     inputUpgradeLabel = cms.VInputTag(
         cms.InputTag('simHcalUnsuppressedDigis:HBHEQIE11DigiCollection'),
         cms.InputTag('simHcalUnsuppressedDigis:HFQIE10DigiCollection')),
+    edmRecHitName = cms.untracked.InputTag("hbheprereco"),
+    #edmRecHitName = cms.InputTag("hbheprerecoM2"),
+    #edmRecHitName = cms.InputTag("hbheprerecoM3"),
+    #edmRecHitName = cms.InputTag("hbheprerecoMahi"),
     InputTagFEDRaw = cms.InputTag("rawDataCollector"),
     RunZS = cms.bool(False),
     FrontEndFormatError = cms.bool(False), # Front End Format Error, for real data only

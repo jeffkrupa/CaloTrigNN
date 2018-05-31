@@ -20,6 +20,25 @@ process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.RawToDigi_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+process.load('Configuration.StandardSequences.Reconstruction_cff')
+
+process.hbheprereco.saveInfos = cms.bool(False)
+process.hbheprerecoMahi = process.hbheprereco.clone()
+process.hbheprerecoMahi.algorithm.__setattr__('useMahi',cms.bool(True))
+process.hbheprerecoMahi.algorithm.__setattr__('useM2',cms.bool(False))
+process.hbheprerecoMahi.algorithm.__setattr__('useM3',cms.bool(False))
+process.hbheprerecoMahi.algorithm.__setattr__('applyPedConstraint',cms.bool(False))
+process.hbheprerecoMahi.algorithm.__setattr__('applyTimeConstraint',cms.bool(False))
+
+process.hbheprerecoM2 = process.hbheprereco.clone()
+process.hbheprerecoM2.algorithm.__setattr__('useMahi',cms.bool(False))
+process.hbheprerecoM2.algorithm.__setattr__('useM2',cms.bool(True))
+process.hbheprerecoM2.algorithm.__setattr__('useM3',cms.bool(False))
+
+process.hbheprerecoM3 = process.hbheprereco.clone()
+process.hbheprerecoM3.algorithm.__setattr__('useMahi',cms.bool(False))
+process.hbheprerecoM3.algorithm.__setattr__('useM2',cms.bool(False))
+process.hbheprerecoM3.algorithm.__setattr__('useM3',cms.bool(True))
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(100)
@@ -55,13 +74,29 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, '100X_upgrade2018_realistic_v11', 'HcalChannelQuality_2018_v3.0_mc,HcalChannelQualityRcd,frontier://FrontierProd/CMS_CONDITIONS')
 
 # Path and EndPath definitions
+process.digiPath = cms.Path(
+    process.hcalDigis
+)
+process.recoPath = cms.Path(
+    process.hbheprereco
+    *process.hbheprerecoMahi
+    *process.hbheprerecoM2
+    *process.hbheprerecoM3
+)
+process.out = cms.OutputModule("PoolOutputModule",
+    fileName = cms.untracked.string("test.root")
+)
+process.outpath = cms.EndPath(process.out)
+
+
+# Path and EndPath definitions
 process.raw2digi_step = cms.Path(process.RawToDigi)
 process.load('CaloTrigNN.CaloNtupler.hcaltpntupler_cfi')
 process.ntuple_step = cms.Path(process.simHcalTriggerPrimitiveNtuple)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 
 # Schedule definition
-process.schedule = cms.Schedule(process.raw2digi_step,process.ntuple_step,process.endjob_step)
+process.schedule = cms.Schedule(process.raw2digi_step,process.digiPath,process.recoPath,process.ntuple_step,process.endjob_step)
 #process.schedule = cms.Schedule(process.raw2digi_step,process.simHcalTriggerPrimitiveNtuple,process.endjob_step)
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)

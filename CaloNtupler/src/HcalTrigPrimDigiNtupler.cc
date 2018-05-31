@@ -54,8 +54,12 @@ HcalTrigPrimDigiNtupler::HcalTrigPrimDigiNtupler(const edm::ParameterSet& iPS) :
   //fNtuple.setPeakFinderAlgorithm(iPS.getParameter<int>("PeakFinderAlgorithm"));
   fFile        = new TFile("Output.root","RECREATE");
   fHcalArr     = new TClonesArray("baconhep::THcalDep");
+  fRHParArr    = new TClonesArray("baconhep::TRHPart");
+  
+  fFillerRH = new FillerRH(iPS,consumesCollector()); 
   fTree        = new TTree("Events","Events");
-  fTree->Branch("HcalPulse", &fHcalArr); 
+  fTree->Branch("HcalPulse",  &fHcalArr); 
+  fTree->Branch("HcalRecHit", &fRHParArr); 
 }
 void HcalTrigPrimDigiNtupler::endJob() {
   fFile->cd();
@@ -106,8 +110,10 @@ void HcalTrigPrimDigiNtupler::produce(edm::Event& iEvent, const edm::EventSetup&
   }
   // Step C: Invoke the algorithm, passing in inputs and getting back outputs.
   fHcalArr->Clear();
+  fRHParArr->Clear();
   //std::cout << "===> Filling " << fHcalArr << " -- " << &(*hbheUpDigis) << " -- " << &(*hfUpDigis) << std::endl;
   fNtuple.fill(fHcalArr,inputCoder.product(), pSetup.product(), &(*pG),fGeometry,hfembit,lSimHits,fRecNumber,*hbheDigis,*hbheUpDigis,*hfUpDigis,*hfUpDigis);
+  fFillerRH->fill(fRHParArr,iEvent,iSetup,lSimHits,fRecNumber);
   fTree->Fill();
   // Step C.1: Run FE Format Error / ZS for real data.
   iEvent.put(std::move(result));
