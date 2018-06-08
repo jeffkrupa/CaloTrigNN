@@ -53,8 +53,8 @@ HcalTrigPrimDigiNtupler::HcalTrigPrimDigiNtupler(const edm::ParameterSet& iPS) :
   produces<HcalTrigPrimDigiCollection>();
   //fNtuple.setPeakFinderAlgorithm(iPS.getParameter<int>("PeakFinderAlgorithm"));
   fFile        = new TFile("Output.root","RECREATE");
-  fHcalArr     = new TClonesArray("baconhep::THcalDep");
-  fRHParArr    = new TClonesArray("baconhep::TRHPart");
+  fHcalArr     = new TClonesArray("baconhep::THcalDep",5000);
+  fRHParArr    = new TClonesArray("baconhep::TRHPart",5000);
   
   fFillerRH = new FillerRH(iPS,consumesCollector()); 
   fTree        = new TTree("Events","Events");
