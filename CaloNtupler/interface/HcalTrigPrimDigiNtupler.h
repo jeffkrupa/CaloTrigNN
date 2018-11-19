@@ -9,8 +9,10 @@
 #include "DataFormats/FEDRawData/interface/FEDRawDataCollection.h"
 #include "CaloTrigNN/CaloNtupler/interface/HcalNtuple.h"
 #include "CaloTrigNN/CaloNtupler/interface/FillerRH.hh"
+#include "CaloTrigNN/CaloNtupler/interface/FillerPF.hh"
 #include "CaloTrigNN/DataFormats/interface/THcalDep.hh"
 #include "CaloTrigNN/DataFormats/interface/TRHPart.hh"
+#include "CaloTrigNN/DataFormats/interface/TPFPart.hh"
 #include <vector>
 #include "TFile.h"
 #include "TTree.h"
@@ -29,6 +31,7 @@ public:
 private:
   HcalNtuple fNtuple;
   FillerRH  *fFillerRH;
+  FillerPF  *fFillerPF;
 
   /// input tags for HCAL digis
   std::vector<edm::InputTag> fInputLabel;
@@ -51,6 +54,7 @@ private:
   TTree *fTree;
   TClonesArray *fHcalArr;
   TClonesArray *fRHParArr;
+  TClonesArray *fPFParArr;
 };
 
 #endif
