@@ -19,6 +19,9 @@ namespace baconhep
     float pt,eta,phi,m,e,ecalE,hcalE,avgdepth;
     int   q,pfType;
     std::array<double,7> depthE;
+    std::array<double,7> depthgenE;
+    std::array<double,7> depthgenESum;
+    std::array<double,7> depthESum;
     std::array<double,7> depthFrac;
     std::vector<float> fraction;
     std::vector<int>   detid;
