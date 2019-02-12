@@ -72,7 +72,7 @@ process.generator = cms.EDProducer("FlatRandomEGunProducer",
         MaxEta = cms.double(5.0),
         MaxPhi = cms.double(3.14159265359),
         MinEta = cms.double(-5.0),
-        MinE = cms.double(49.99),
+        MinE = cms.double(0.99),
         MinPhi = cms.double(-3.14159265359), ## in radians
 
         MaxE = cms.double(200.01)
@@ -105,7 +105,19 @@ for path in process.paths:
 
 # Customisation from command line
 
+# Scramble - randomize pion events
+import random
+rnd = random.SystemRandom()
+for X in process.RandomNumberGeneratorService.parameterNames_():
+   if X != 'saveFileName': getattr(process.RandomNumberGeneratorService,X).initialSeed = rnd.randint(1,99999999)
+
 # Add early deletion of temporary data products to reduce peak memory need
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
 process = customiseEarlyDelete(process)
 # End adding early deletion
+
+import random
+rnd = random.SystemRandom()
+for X in process.RandomNumberGeneratorService.parameterNames_():
+   if X != 'saveFileName': getattr(process.RandomNumberGeneratorService,X).initialSeed = rnd.randint(1,99999999)
+

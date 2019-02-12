@@ -2,6 +2,7 @@
 #define CALOTRIGANA_DATAFORMATS_LINKDEF_H
 #include "CaloTrigNN/DataFormats/interface/THcalDep.hh"
 #include "CaloTrigNN/DataFormats/interface/TRHPart.hh"
+#include "CaloTrigNN/DataFormats/interface/TPFPart.hh"
 #endif
 
 #ifdef __CINT__
@@ -14,4 +15,5 @@
 
 #pragma link C++ class baconhep::THcalDep+;
 #pragma link C++ class baconhep::TRHPart+;
+#pragma link C++ class baconhep::TPFPart+;
 #endif
