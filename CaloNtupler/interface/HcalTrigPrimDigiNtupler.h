@@ -22,15 +22,15 @@ class HcalTrigPrimDigiNtupler : public edm::stream::EDProducer<> {
 public:
 
   explicit HcalTrigPrimDigiNtupler(const edm::ParameterSet& ps);
-  ~HcalTrigPrimDigiNtupler() override { endJob(); delete fHcalArr; delete fRHParArr; delete fFillerRH;}
-
+  //~HcalTrigPrimDigiNtupler() override { endJob(); delete fHcalArr; delete fRHParArr; delete fFillerRH;}
+  ~HcalTrigPrimDigiNtupler() override { endJob(); delete fPFParArr; delete fFillerPF;}
   /**Produces the EDM products,*/
   void produce(edm::Event& e, const edm::EventSetup& c) override;
   void endJob();
   
 private:
-  HcalNtuple fNtuple;
-  FillerRH  *fFillerRH;
+  //HcalNtuple fNtuple;
+  //FillerRH  *fFillerRH;
   FillerPF  *fFillerPF;
 
   /// input tags for HCAL digis
@@ -52,8 +52,8 @@ private:
   const CaloGeometry* fGeometry;
   TFile *fFile;
   TTree *fTree;
-  TClonesArray *fHcalArr;
-  TClonesArray *fRHParArr;
+  //TClonesArray *fHcalArr;
+  //TClonesArray *fRHParArr;
   TClonesArray *fPFParArr;
 };
 

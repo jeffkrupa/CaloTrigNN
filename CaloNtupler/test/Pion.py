@@ -69,9 +69,9 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2018_realistic', '
 process.generator = cms.EDProducer("FlatRandomEGunProducer",
     PGunParameters = cms.PSet(
         PartID = cms.vint32(211),
-        MaxEta = cms.double(5.0),
+        MaxEta = cms.double(3.0),
         MaxPhi = cms.double(3.14159265359),
-        MinEta = cms.double(-5.0),
+        MinEta = cms.double(1.7),
         MinE = cms.double(0.99),
         MinPhi = cms.double(-3.14159265359), ## in radians
 

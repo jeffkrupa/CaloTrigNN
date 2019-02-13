@@ -40,10 +40,11 @@ FillerPF::~FillerPF(){}
 void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::EventSetup &iSetup,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber){
   assert(array);
 
+  const reco::PFCandidateCollection *PFCol = 0;
   edm::Handle<reco::PFCandidateCollection> hPFProduct;
   iEvent.getByToken(fTokPFName,hPFProduct);
   assert(hPFProduct.isValid());
-  const reco::PFCandidateCollection *PFCol = hPFProduct.product();
+  PFCol = hPFProduct.product();
   
 
   //const PFClusterCollection *pfCHCAL   = 0;
@@ -110,16 +111,16 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
       iPFPart->depthESum[i0]   = 0; 
     }
     for(unsigned int i0 = 0; i0 < iPF->elementsInBlocks().size(); i0++ ) { 
-      if(i0 > 1) break;
+      if(i0 >= 1) break; //consider only first block
       reco::PFBlockRef blockRef = iPF->elementsInBlocks()[i0].first;
       if(blockRef.isNull()) continue;
       const reco::PFBlock& block = *blockRef;
       const edm::OwnVector<reco::PFBlockElement>& elements = block.elements();
-      //float totGenE    = 0; 
-      //float totRecHitE = 0; 
+      float totGenE    = 0; 
+      float totRecHitE = 0; 
       for(unsigned int iEle=0; iEle< elements.size(); iEle++) {
 	// Find the tracks in the block
-	if(elements[iEle].type() != 5) continue;
+	if(elements[iEle].type() != 5) continue; //consider only HCAL element of PF cand 
 	reco::PFClusterRef pCluster = elements[iEle].clusterRef();
 	if(pCluster.isNull()) continue;
 	std::array<double,7> energyPerDepth; 
