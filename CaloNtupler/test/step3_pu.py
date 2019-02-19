@@ -79,7 +79,7 @@ process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
 )
 
 # Other statements
-process.mix.input.nbPileupEvents.averageNumber = cms.double(35.000000)
+process.mix.input.nbPileupEvents.averageNumber = cms.double(40.000000)
 process.mix.bunchspace = cms.int32(25)
 process.mix.minBunch = cms.int32(-12)
 process.mix.maxBunch = cms.int32(3)

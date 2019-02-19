@@ -74,6 +74,7 @@ void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
   for(reco::PFCandidateCollection::const_iterator itPF = PFCol->begin(); itPF!=PFCol->end(); itPF++) {
     pId++;
     // construct object and place in array
+    if (std::abs(itPF->eta()) > 3. || std::abs(itPF->eta() < 1.7)) continue;
     assert(rArray.GetEntries() < rArray.GetSize());
     const int index = rArray.GetEntries();
     new(rArray[index]) baconhep::TPFPart();
@@ -120,13 +121,14 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
       float totRecHitE = 0; 
       for(unsigned int iEle=0; iEle< elements.size(); iEle++) {
 	// Find the tracks in the block
-	if(elements[iEle].type() != 5) continue; //consider only HCAL element of PF cand 
+	if(elements[iEle].type() != 5 && elements[iEle].type() != 4) continue; //consider only HCAL element of PF cand 
 	reco::PFClusterRef pCluster = elements[iEle].clusterRef();
 	if(pCluster.isNull()) continue;
 	std::array<double,7> energyPerDepth; 
 	std::array<double,7> genenergyPerDepth; 
 	std::fill(energyPerDepth.begin(), energyPerDepth.end(), 0.0);
 	std::fill(genenergyPerDepth.begin(), genenergyPerDepth.end(), 0.0);
+	float ecalESum = 0.;
 	for (auto & hitRefAndFrac : pCluster->recHitFractions()) {
 	  const auto & hit = *hitRefAndFrac.recHitRef();
 	  if (DetId(hit.detId()).det() == DetId::Hcal) {
@@ -144,6 +146,12 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
 	    //totRecHitE +=  hit.energy()*hitRefAndFrac.fraction();
 	    //std::cout << " --> " << tmpgenE*hitRefAndFrac.fraction() << " -- " << hit.energy()*hitRefAndFrac.fraction() << " cluster---> " << pCluster->energy()  << " --ieta " <<  pDetId.ieta() << " --iphi  " << pDetId.iphi() << " --depth " << pDetId.depth() << " -- " << hitRefAndFrac.fraction() << std::endl;
 	    //pCluster->position().rho() << " -- " << pCluster->layer() << " -- " << hit.depth() << " -- " << pDetId.ieta() << " -- " << hitRefAndFrac.fraction() << " -- " << hit.energy() << std::endl;
+	    //std::cout << hit.depth() << " - " << pDetId.depth() << std::endl;
+	  }
+	  else if(DetId(hit.detId()).det() == 3) {
+	    float tmpE = hit.energy();
+            ecalESum += hitRefAndFrac.fraction()*tmpE;
+	    //std::cout << ecalESum << std::endl;
 	  }
 	}
 	double sum = std::accumulate(energyPerDepth.begin(), energyPerDepth.end(), 0.);
@@ -156,6 +164,7 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
 	    iPFPart->depthgenESum[i]  += genenergyPerDepth[i];
 	  }
 	}
+	iPFPart->ecalSum = ecalESum;
 	if(pCluster.isNull()) continue;
 	lTotRho += (pCluster->position().rho() - lRhoE)*pCluster->energy();
 	lTotE   += pCluster->energy();

@@ -11,12 +11,12 @@ namespace baconhep
   {
     public:
       TPFPart():
-	pt(0), eta(0), phi(0), m(0),e(0),ecalE(0),hcalE(0),avgdepth(0),
+	pt(0), eta(0), phi(0), m(0),e(0),ecalE(0),hcalE(0),avgdepth(0), ecalSum(0),
 	q(0),pfType(-1)
     {}
     ~TPFPart(){}
 
-    float pt,eta,phi,m,e,ecalE,hcalE,avgdepth;
+    float pt,eta,phi,m,e,ecalE,hcalE,avgdepth,ecalSum;
     int   q,pfType;
     std::array<double,7> depthE;
     std::array<double,7> depthgenE;

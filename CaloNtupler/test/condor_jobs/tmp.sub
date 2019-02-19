@@ -1,0 +1,7 @@
+executable              = submit_3.sh
+arguments               = $(ClusterId)$(ProcId) 0 900 /afs/cern.ch/user/j/jekrupa/private/x509up
+output                  = output/0pu.$(ClusterId).$(ProcId).out
+error                   = error/0pu.$(ClusterId).$(ProcId).err
+log                     = log/0pu.$(ClusterId).$(ProcId).log
++JobFlavour = "workday"  
+queue 
