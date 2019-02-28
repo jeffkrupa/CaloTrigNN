@@ -72,6 +72,7 @@ void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
   TClonesArray &rArray = *array;
   int pId = 0; 
   for(reco::PFCandidateCollection::const_iterator itPF = PFCol->begin(); itPF!=PFCol->end(); itPF++) {
+    //std::cout << "PF Candidate: " << pId << std::endl;
     pId++;
     // construct object and place in array
     if (std::abs(itPF->eta()) > 3. || std::abs(itPF->eta() < 1.7)) continue;
@@ -80,6 +81,7 @@ void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
     new(rArray[index]) baconhep::TPFPart();
     baconhep::TPFPart *pPF = (baconhep::TPFPart*) rArray[index];
 
+    std::cout << "------PF Candidate " << pId << " ------" << std::endl;
     // Kinematics
     //==============================    
     pPF->pt     = itPF->pt();
@@ -100,28 +102,36 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
     //Get Calo Depth of PF Clusters
     float lRhoE    = iPF->positionAtECALEntrance().rho();
     assert(!iPF->elementsInBlocks().empty() );
-    iPFPart->fraction.clear();
-    iPFPart->detid.clear();
-    iPFPart->ieta.clear();
-    iPFPart->iphi.clear();
-    iPFPart->depth.clear();
-    iPFPart->gene.clear();
+    //iPFPart->fraction.clear();
+    //iPFPart->detid.clear();
+    //iPFPart->ieta.clear()PF->hcalDepthEnergyFraction;
+    //iPFPart->iphi.clear();
+    //iPFPart->depth.clear();
+    //iPFPart->gene.clear();
     for(int i0 = 0; i0 < 7; i0++) { 
       iPFPart->depthE[i0]      = 0; 
       iPFPart->depthFrac[i0]   = 0; 
       iPFPart->depthESum[i0]   = 0; 
     }
+    //std::cout << "# of blocks: " << iPF->elementsInBlocks().size() << std::endl;
+    std::cout << "PF energy: " << iPF->energy() << "\t eta: " << iPF->eta() << "\t phi: " << iPF->phi() << std::endl;
     for(unsigned int i0 = 0; i0 < iPF->elementsInBlocks().size(); i0++ ) { 
       if(i0 >= 1) break; //consider only first block
+      std::cout << "Block " << i0 << " of " << iPF->elementsInBlocks().size() << std::endl;
       reco::PFBlockRef blockRef = iPF->elementsInBlocks()[i0].first;
       if(blockRef.isNull()) continue;
       const reco::PFBlock& block = *blockRef;
       const edm::OwnVector<reco::PFBlockElement>& elements = block.elements();
       float totGenE    = 0; 
       float totRecHitE = 0; 
+      //std::cout << "# of elements: " << elements.size() << std::endl; 
       for(unsigned int iEle=0; iEle< elements.size(); iEle++) {
+	std::cout << "Element " << iEle << " of " << elements.size() - 1 <<std::endl;
+        //PFBlockElement::Type type = elements[iEle].type();
+        //assert( type == PFBlockElement::HCAL );
 	// Find the tracks in the block
 	if(elements[iEle].type() != 5 && elements[iEle].type() != 4) continue; //consider only HCAL element of PF cand 
+        //std::cout << "Element type: " <<  elements[iEle].type() << ", energy: " << iPF->energy() << " (eta,phi) = (" << iPF->eta() << "," << iPF->phi() << std::endl;
 	reco::PFClusterRef pCluster = elements[iEle].clusterRef();
 	if(pCluster.isNull()) continue;
 	std::array<double,7> energyPerDepth; 
@@ -129,16 +139,20 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
 	std::fill(energyPerDepth.begin(), energyPerDepth.end(), 0.0);
 	std::fill(genenergyPerDepth.begin(), genenergyPerDepth.end(), 0.0);
 	float ecalESum = 0.;
+   	for( int x = 0; x < 7; ++x){ std::cout << iPF->hcalDepthEnergyFractions()[x] << " - ";}
+	std::cout << "\n";
 	for (auto & hitRefAndFrac : pCluster->recHitFractions()) {
 	  const auto & hit = *hitRefAndFrac.recHitRef();
 	  if (DetId(hit.detId()).det() == DetId::Hcal) {
+
 	    if (hit.depth() == 0) continue;
 	    HcalDetId pDetId(hit.detId());
-	    iPFPart->ieta.push_back(pDetId.ieta());
-	    iPFPart->iphi.push_back(pDetId.iphi());
-	    iPFPart->depth.push_back(pDetId.depth());
-	    iPFPart->gene.push_back(float(genE(pDetId,iSimHits,iRecNumber)));
-	    iPFPart->fraction.push_back(hitRefAndFrac.fraction());
+            std::cout << "CL depth: " << hit.depth() << "\tenergy: " << hit.energy() << "\tieta: " << pDetId.ieta() << "\tiphi: " << pDetId.iphi() << std::endl;
+	    //iPFPart->ieta.push_back(pDetId.ieta());
+	    //iPFPart->iphi.push_back(pDetId.iphi());
+	    //iPFPart->depth.push_back(pDetId.depth());
+	    //iPFPart->gene.push_back(float(genE(pDetId,iSimHits,iRecNumber)));
+	    //iPFPart->fraction.push_back(hitRefAndFrac.fraction());
 	    energyPerDepth[hit.depth()-1] += hitRefAndFrac.fraction()*hit.energy();
 	    float tmpgenE = float(genE(pDetId,iSimHits,iRecNumber));
 	    genenergyPerDepth[hit.depth()-1] += hitRefAndFrac.fraction()*tmpgenE;

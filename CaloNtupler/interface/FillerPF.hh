@@ -19,7 +19,12 @@
 #include "CaloTrigNN/DataFormats/interface/TPFPart.hh"
 #include "DataFormats/ParticleFlowReco/interface/PFCluster.h"
 #include "DataFormats/ParticleFlowReco/interface/PFClusterFwd.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlockElementTrack.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlockElementCluster.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlockElement.h"
+#include "RecoParticleFlow/PFProducer/interface/PFAlgo.h"
 
+class PFAlgo;
 class TClonesArray;
 class FillerPF
   {
@@ -48,5 +53,8 @@ class FillerPF
     edm::EDGetTokenT<reco::PFClusterCollection>   fTokPFClustFName;
     edm::EDGetTokenT<reco::PFClusterCollection>   fTokPFClustSName;
     HcalSimParameterMap fSimParameterMap;
+
+    private:
+      std::auto_ptr<PFAlgo> pfAlgo_;
 };
 #endif

@@ -22,8 +22,13 @@
 #include "CondFormats/HcalObjects/interface/HcalLutMetadata.h"
 #include "Geometry/Records/interface/CaloGeometryRecord.h"
 
+#include "RecoParticleFlow/PFProducer/interface/PFAlgo.h"
 
 #include <algorithm>
+
+using namespace std;
+using namespace edm;
+using namespace boost; 
 
 HcalTrigPrimDigiNtupler::HcalTrigPrimDigiNtupler(const edm::ParameterSet& iPS) : 
   //fNtuple(iPS.getParameter<bool>("peakFilter"),iPS.getParameter<std::vector<double> >("weights"),
@@ -45,6 +50,10 @@ HcalTrigPrimDigiNtupler::HcalTrigPrimDigiNtupler(const edm::ParameterSet& iPS) :
     fLongShortSlope  = fLongShortCut.getParameter<double>("Long_vrs_Short_Slope"); //slope of the line that cuts are based on
     fLongShortOffset = fLongShortCut.getParameter<double>("Long_Short_Offset"); //offset of line
   }
+
+  inputTagBlocks_ = consumes<reco::PFBlockCollection>(iPS.getParameter<InputTag>("blocks"));
+
+ 
   fHB        = consumes<HBHEDigiCollection>(fInputLabel[0]);
   fHF        = consumes<HFDigiCollection>  (fInputLabel[1]);
   fHBHEUp    = consumes<QIE11DigiCollection>(fInputUpgradeLabel[0]);
@@ -52,16 +61,16 @@ HcalTrigPrimDigiNtupler::HcalTrigPrimDigiNtupler(const edm::ParameterSet& iPS) :
   fSHitToken = consumes<edm::PCaloHitContainer>(edm::InputTag("g4SimHits","HcalHits"));
   produces<HcalTrigPrimDigiCollection>();
   //fNtuple.setPeakFinderAlgorithm(iPS.getParameter<int>("PeakFinderAlgorithm"));
-  fFile        = new TFile("Output.root","RECREATE");
+  fFile        = new TFile("Output_old.root","RECREATE");
   //fHcalArr     = new TClonesArray("baconhep::THcalDep",5000);
-  //fRHParArr    = new TClonesArray("baconhep::TRHPart",5000);
+  fRHParArr    = new TClonesArray("baconhep::TRHPart",5000);
   fPFParArr    = new TClonesArray("baconhep::TPFPart",5000);
   
-  //fFillerRH = new FillerRH(iPS,consumesCollector()); 
+  fFillerRH = new FillerRH(iPS,consumesCollector()); 
   fFillerPF = new FillerPF(iPS,consumesCollector()); 
   fTree        = new TTree("Events","Events");
   //fTree->Branch("HcalPulse",  &fHcalArr); 
-  //fTree->Branch("HcalRecHit", &fRHParArr); 
+  fTree->Branch("HcalRecHit", &fRHParArr); 
   fTree->Branch("PFDepth"   , &fPFParArr); 
 }
 void HcalTrigPrimDigiNtupler::endJob() {
@@ -107,16 +116,25 @@ void HcalTrigPrimDigiNtupler::produce(edm::Event& iEvent, const edm::EventSetup&
     
   edm::ESHandle < HcalDbService > pSetup;
   iSetup.get<HcalDbRecord> ().get(pSetup);
+
+  Handle< reco::PFBlockCollection > blocks;
+  iEvent.getByToken( inputTagBlocks_, blocks ); 
+  assert( blocks.isValid() );
+  //std::cout << "BEGFILLERPF" << std::endl;
+  //pfAlgo_->reconstructParticles( blocks );
+  //std::cout << "ENDFILLERPF" << std::endl;
+
+
   //HcalFeatureBit* hfembit = nullptr;
   //if(fHFEMB) {
   //  hfembit = new HcalFeatureHFEMBit(fMinShortEnergy, fMinLongEnergy, fLongShortSlope, fLongShortOffset, *pSetup); //inputs values that cut will be based on
   //}
   // Step C: Invoke the algorithm, passing in inputs and getting back outputs.
   //fHcalArr->Clear();
-  //fRHParArr->Clear();
+  fRHParArr->Clear();
   fPFParArr->Clear();
   //fNtuple.fill(fHcalArr,inputCoder.product(), pSetup.product(), &(*pG),fGeometry,hfembit,lSimHits,fRecNumber,*hbheDigis,*hbheUpDigis,*hfUpDigis,*hfUpDigis);
-  //fFillerRH->fill(fRHParArr,iEvent,iSetup,lSimHits,fRecNumber);
+  fFillerRH->fill(fRHParArr,iEvent,iSetup,lSimHits,fRecNumber);
   fFillerPF->fill(fPFParArr,iEvent,iSetup,lSimHits,fRecNumber);
   fTree->Fill();
   // Step C.1: Run FE Format Error / ZS for real data.

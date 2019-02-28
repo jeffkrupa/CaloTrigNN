@@ -1,6 +1,8 @@
 #ifndef HcalTrigPrimDigiNtupler_h
 #define HcalTrigPrimDigiNtupler_h
 
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Framework/interface/stream/EDProducer.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "SimCalorimetry/HcalTrigPrimAlgos/interface/HcalTriggerPrimitiveAlgo.h"
@@ -17,6 +19,12 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TClonesArray.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
+#include "RecoParticleFlow/PFProducer/interface/PFAlgo.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlockFwd.h"
+//#include "RecoParticleFlow/PFProducer/plugins/PFProducer.h"
+
+class PFAlgo;
 
 class HcalTrigPrimDigiNtupler : public edm::stream::EDProducer<> {
 public:
@@ -29,9 +37,12 @@ public:
   void endJob();
   
 private:
+  edm::EDGetTokenT<reco::PFBlockCollection> inputTagBlocks_;
   //HcalNtuple fNtuple;
-  //FillerRH  *fFillerRH;
+  FillerRH  *fFillerRH;
   FillerPF  *fFillerPF;
+
+  std::auto_ptr<PFAlgo> pfAlgo_;
 
   /// input tags for HCAL digis
   std::vector<edm::InputTag> fInputLabel;
@@ -53,7 +64,7 @@ private:
   TFile *fFile;
   TTree *fTree;
   //TClonesArray *fHcalArr;
-  //TClonesArray *fRHParArr;
+  TClonesArray *fRHParArr;
   TClonesArray *fPFParArr;
 };
 
