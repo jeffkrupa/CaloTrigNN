@@ -24,34 +24,30 @@
 #include "DataFormats/ParticleFlowReco/interface/PFBlockFwd.h"
 //#include "RecoParticleFlow/PFProducer/plugins/PFProducer.h"
 
-class PFAlgo;
 
 class HcalTrigPrimDigiNtupler : public edm::stream::EDProducer<> {
 public:
 
   explicit HcalTrigPrimDigiNtupler(const edm::ParameterSet& ps);
   //~HcalTrigPrimDigiNtupler() override { endJob(); delete fHcalArr; delete fRHParArr; delete fFillerRH;}
-  ~HcalTrigPrimDigiNtupler() override { endJob(); delete fPFParArr; delete fFillerPF;}
+  ~HcalTrigPrimDigiNtupler() override { endJob(); delete fPFParArr; delete fFillerPF; delete fRHParArr; delete fFillerRH;}
   /**Produces the EDM products,*/
   void produce(edm::Event& e, const edm::EventSetup& c) override;
   void endJob();
   
 private:
-  edm::EDGetTokenT<reco::PFBlockCollection> inputTagBlocks_;
   //HcalNtuple fNtuple;
   FillerRH  *fFillerRH;
   FillerPF  *fFillerPF;
-
-  std::auto_ptr<PFAlgo> pfAlgo_;
 
   /// input tags for HCAL digis
   std::vector<edm::InputTag> fInputLabel;
   std::vector<edm::InputTag> fInputUpgradeLabel;
   // this seems a strange way of doing things
-  edm::EDGetTokenT<HBHEDigiCollection> fHB;
-  edm::EDGetTokenT<HFDigiCollection> fHF;
-  edm::EDGetTokenT<QIE11DigiCollection> fHBHEUp;
-  edm::EDGetTokenT<QIE10DigiCollection> fHFUp;
+  //edm::EDGetTokenT<HBHEDigiCollection> fHB;
+  //edm::EDGetTokenT<HFDigiCollection> fHF;
+  //edm::EDGetTokenT<QIE11DigiCollection> fHBHEUp;
+  //edm::EDGetTokenT<QIE10DigiCollection> fHFUp;
   edm::EDGetTokenT<edm::PCaloHitContainer> fSHitToken;
   
   double fMinLongEnergy, fMinShortEnergy, fLongShortSlope, fLongShortOffset;

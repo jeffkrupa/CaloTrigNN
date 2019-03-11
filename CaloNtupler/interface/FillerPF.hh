@@ -24,6 +24,10 @@
 #include "DataFormats/ParticleFlowReco/interface/PFBlockElement.h"
 #include "RecoParticleFlow/PFProducer/interface/PFAlgo.h"
 
+#include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+
 class PFAlgo;
 class TClonesArray;
 class FillerPF
@@ -37,6 +41,7 @@ class FillerPF
 
     float  depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber);
     double genE(HcalDetId &iDetId,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber);
+    float  depthGenSum(const reco::PFCandidate *iPF, const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber);
 
   protected:
     // EDM object collection names
@@ -47,6 +52,11 @@ class FillerPF
     std::string fPFClustOName;
     std::string fPFClustFName;
     std::string fPFClustSName;
+    std::string fGenEvtInfoName;
+    std::string fLHEEvtInfoName;
+    std::string fGenParName;
+    edm::EDGetTokenT<GenEventInfoProduct>         fTokGenEvent;
+    edm::EDGetTokenT<reco::GenParticleCollection> fTokGenPar;
     edm::EDGetTokenT<reco::PFClusterCollection>   fTokPFClustHName;
     edm::EDGetTokenT<reco::PFClusterCollection>   fTokPFClustEName;
     edm::EDGetTokenT<reco::PFClusterCollection>   fTokPFClustOName;

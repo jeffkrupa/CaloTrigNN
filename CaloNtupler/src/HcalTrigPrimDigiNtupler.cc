@@ -30,14 +30,15 @@ using namespace std;
 using namespace edm;
 using namespace boost; 
 
-HcalTrigPrimDigiNtupler::HcalTrigPrimDigiNtupler(const edm::ParameterSet& iPS) : 
+HcalTrigPrimDigiNtupler::HcalTrigPrimDigiNtupler(const edm::ParameterSet& iPS)  
   //fNtuple(iPS.getParameter<bool>("peakFilter"),iPS.getParameter<std::vector<double> >("weights"),
   //	  iPS.getParameter<int>("numberOfSamples"),iPS.getParameter<int>("numberOfPresamples"),
   //	  iPS.getParameter<int>("numberOfSamplesHF"),iPS.getParameter<int>("numberOfPresamplesHF")
   //	  ),
-  fInputLabel(iPS.getParameter<std::vector<edm::InputTag> >("inputLabel")),
-  fInputUpgradeLabel(iPS.getParameter<std::vector<edm::InputTag> >("inputUpgradeLabel")) { 
-  //check upgrade
+  //fInputLabel(iPS.getParameter<std::vector<edm::InputTag> >("inputLabel")),
+  //fInputUpgradeLabel(iPS.getParameter<std::vector<edm::InputTag> >("inputUpgradeLabel")) { 
+  {
+  /*//check upgrade
   std::vector<bool> upgrades = {iPS.getParameter<bool>("upgradeHB"), iPS.getParameter<bool>("upgradeHE"), iPS.getParameter<bool>("upgradeHF")};
   fUpgrade = std::any_of(std::begin(upgrades), std::end(upgrades), [](bool a) { return a; });
   fLegacy  = std::any_of(std::begin(upgrades), std::end(upgrades), [](bool a) { return !a; });
@@ -51,15 +52,12 @@ HcalTrigPrimDigiNtupler::HcalTrigPrimDigiNtupler(const edm::ParameterSet& iPS) :
     fLongShortOffset = fLongShortCut.getParameter<double>("Long_Short_Offset"); //offset of line
   }
 
-  inputTagBlocks_ = consumes<reco::PFBlockCollection>(iPS.getParameter<InputTag>("blocks"));
-
- 
   fHB        = consumes<HBHEDigiCollection>(fInputLabel[0]);
   fHF        = consumes<HFDigiCollection>  (fInputLabel[1]);
   fHBHEUp    = consumes<QIE11DigiCollection>(fInputUpgradeLabel[0]);
   fHFUp      = consumes<QIE10DigiCollection>(fInputUpgradeLabel[1]);
-  fSHitToken = consumes<edm::PCaloHitContainer>(edm::InputTag("g4SimHits","HcalHits"));
-  produces<HcalTrigPrimDigiCollection>();
+  */fSHitToken = consumes<edm::PCaloHitContainer>(edm::InputTag("g4SimHits","HcalHits"));
+  //produces<HcalTrigPrimDigiCollection>();
   //fNtuple.setPeakFinderAlgorithm(iPS.getParameter<int>("PeakFinderAlgorithm"));
   fFile        = new TFile("Output_old.root","RECREATE");
   //fHcalArr     = new TClonesArray("baconhep::THcalDep",5000);
@@ -85,8 +83,8 @@ void HcalTrigPrimDigiNtupler::produce(edm::Event& iEvent, const edm::EventSetup&
   fRecNumber= &*pHRNDC;
   
   // Step A: get the conditions, for the decoding
-  edm::ESHandle<HcalTPGCoder> inputCoder;
-  iSetup.get<HcalTPGRecord>().get(inputCoder);
+  //edm::ESHandle<HcalTPGCoder> inputCoder;
+  //iSetup.get<HcalTPGRecord>().get(inputCoder);
  
   edm::ESHandle<HcalTrigTowerGeometry> pG;
   iSetup.get<CaloGeometryRecord>().get(pG);
@@ -103,6 +101,7 @@ void HcalTrigPrimDigiNtupler::produce(edm::Event& iEvent, const edm::EventSetup&
   fGeometry = &*geometry;
   fRecNumber= &*pHRNDC;
 
+  /*
   // Step B: Create empty output
   std::unique_ptr<HcalTrigPrimDigiCollection> result(new HcalTrigPrimDigiCollection());
   edm::Handle<HBHEDigiCollection>  hbheDigis;
@@ -117,18 +116,10 @@ void HcalTrigPrimDigiNtupler::produce(edm::Event& iEvent, const edm::EventSetup&
   edm::ESHandle < HcalDbService > pSetup;
   iSetup.get<HcalDbRecord> ().get(pSetup);
 
-  Handle< reco::PFBlockCollection > blocks;
-  iEvent.getByToken( inputTagBlocks_, blocks ); 
-  assert( blocks.isValid() );
-  //std::cout << "BEGFILLERPF" << std::endl;
-  //pfAlgo_->reconstructParticles( blocks );
-  //std::cout << "ENDFILLERPF" << std::endl;
-
-
-  //HcalFeatureBit* hfembit = nullptr;
-  //if(fHFEMB) {
-  //  hfembit = new HcalFeatureHFEMBit(fMinShortEnergy, fMinLongEnergy, fLongShortSlope, fLongShortOffset, *pSetup); //inputs values that cut will be based on
-  //}
+  HcalFeatureBit* hfembit = nullptr;
+  if(fHFEMB) {
+    hfembit = new HcalFeatureHFEMBit(fMinShortEnergy, fMinLongEnergy, fLongShortSlope, fLongShortOffset, *pSetup); //inputs values that cut will be based on
+  }*/
   // Step C: Invoke the algorithm, passing in inputs and getting back outputs.
   //fHcalArr->Clear();
   fRHParArr->Clear();
@@ -138,5 +129,5 @@ void HcalTrigPrimDigiNtupler::produce(edm::Event& iEvent, const edm::EventSetup&
   fFillerPF->fill(fPFParArr,iEvent,iSetup,lSimHits,fRecNumber);
   fTree->Fill();
   // Step C.1: Run FE Format Error / ZS for real data.
-  iEvent.put(std::move(result));
+  //iEvent.put(std::move(result));
 }

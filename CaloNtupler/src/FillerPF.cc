@@ -13,24 +13,34 @@
 #include <TMath.h>
 #include <TLorentzVector.h>
 #include <numeric>
+#include <algorithm>
+
+#include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "DataFormats/Math/interface/deltaR.h"
 
 using namespace baconhep;
 
 //--------------------------------------------------------------------------------------------------
 FillerPF::FillerPF(const edm::ParameterSet &iConfig,edm::ConsumesCollector && iC):
-  fPFName      (iConfig.getUntrackedParameter<std::string>("edmName","particleFlow")),
-  fPFClustHName (iConfig.getUntrackedParameter<std::string>("edmName","particleFlowClusterHCAL")),
-  fPFClustEName (iConfig.getUntrackedParameter<std::string>("edmName","particleFlowClusterECAL")),
-  fPFClustOName (iConfig.getUntrackedParameter<std::string>("edmName","particleFlowClusterHO")),
-  fPFClustFName (iConfig.getUntrackedParameter<std::string>("edmName","particleFlowClusterHF")),
-  fPFClustSName (iConfig.getUntrackedParameter<std::string>("edmName","particleFlowClusterPS"))
+  fPFName        (iConfig.getUntrackedParameter<std::string>("edmName","particleFlow")),
+  fPFClustHName  (iConfig.getUntrackedParameter<std::string>("edmName","particleFlowClusterHCAL")),
+  fPFClustEName  (iConfig.getUntrackedParameter<std::string>("edmName","particleFlowClusterECAL")),
+  fPFClustOName  (iConfig.getUntrackedParameter<std::string>("edmName","particleFlowClusterHO")),
+  fPFClustFName  (iConfig.getUntrackedParameter<std::string>("edmName","particleFlowClusterHF")),
+  fPFClustSName  (iConfig.getUntrackedParameter<std::string>("edmName","particleFlowClusterPS")),
+  fGenEvtInfoName(iConfig.getUntrackedParameter<std::string>("edmGenEventInfoName","generator")),
+  fGenParName    (iConfig.getUntrackedParameter<std::string>("edmGenParticlesName","genParticles"))
 {
-  fTokPFName         = iC.consumes<reco::PFCandidateCollection>(fPFName);
-  fTokPFClustHName    = iC.consumes<reco::PFClusterCollection>  (fPFClustHName);
-  fTokPFClustEName    = iC.consumes<reco::PFClusterCollection>  (fPFClustEName);
-  fTokPFClustOName    = iC.consumes<reco::PFClusterCollection>  (fPFClustOName);
-  fTokPFClustFName    = iC.consumes<reco::PFClusterCollection>  (fPFClustFName);
-  fTokPFClustSName    = iC.consumes<reco::PFClusterCollection>  (fPFClustSName);
+  fTokGenEvent        = iC.mayConsume<GenEventInfoProduct>        (fGenEvtInfoName);
+  fTokGenPar          = iC.mayConsume<reco::GenParticleCollection>(fGenParName);
+  fTokPFName          = iC.consumes<reco::PFCandidateCollection>  (fPFName);
+  fTokPFClustHName    = iC.consumes<reco::PFClusterCollection>    (fPFClustHName);
+  fTokPFClustEName    = iC.consumes<reco::PFClusterCollection>    (fPFClustEName);
+  fTokPFClustOName    = iC.consumes<reco::PFClusterCollection>    (fPFClustOName);
+  fTokPFClustFName    = iC.consumes<reco::PFClusterCollection>    (fPFClustFName);
+  fTokPFClustSName    = iC.consumes<reco::PFClusterCollection>    (fPFClustSName);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -69,37 +79,74 @@ void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
   assert(hPFCPS.isValid());
   //pfCHCAL = hPFCHCAL.product();
 
+  edm::Handle<GenEventInfoProduct> hGenEvtInfoProduct;
+  iEvent.getByToken(fTokGenEvent,hGenEvtInfoProduct);
+  assert(hGenEvtInfoProduct.isValid());
+
+  const reco::GenParticleCollection * GenCol = 0;
+  edm::Handle<reco::GenParticleCollection> hGenParProduct;
+  iEvent.getByToken(fTokGenPar,hGenParProduct);
+  assert(hGenParProduct.isValid()); 
+  GenCol = hGenParProduct.product();
+
+  std::vector<int> pdgId; std::vector<float> eta; std::vector<float> phi;
+  int genId = 0;
+  for (reco::GenParticleCollection::const_iterator itGenP = GenCol->begin(); itGenP!=GenCol->end(); ++itGenP){
+       genId++;
+       std::cout << "------Gen particle " << genId << " ------" << std::endl;
+       std::cout << "pdg/pt/eta/phi" << itGenP->pdgId() << "/" << itGenP->pt() << "/" << itGenP->eta() << "/" << itGenP->phi() << std::endl;
+       pdgId.push_back(itGenP->pdgId()); eta.push_back(itGenP->eta()); phi.push_back(itGenP->phi());
+  }
+
   TClonesArray &rArray = *array;
   int pId = 0; 
   for(reco::PFCandidateCollection::const_iterator itPF = PFCol->begin(); itPF!=PFCol->end(); itPF++) {
     //std::cout << "PF Candidate: " << pId << std::endl;
     pId++;
     // construct object and place in array
-    if (std::abs(itPF->eta()) > 3. || std::abs(itPF->eta() < 1.7)) continue;
+    float genE = depthGenSum(&(*itPF),iSimHits,iRecNumber);
+    
+    if (std::abs(itPF->eta()) > 3. || std::abs(itPF->eta()) < 1.7) continue;
+    //if (genE / itPF->energy() < 0.1) continue;
+
     assert(rArray.GetEntries() < rArray.GetSize());
     const int index = rArray.GetEntries();
     new(rArray[index]) baconhep::TPFPart();
     baconhep::TPFPart *pPF = (baconhep::TPFPart*) rArray[index];
 
     std::cout << "------PF Candidate " << pId << " ------" << std::endl;
+    std::cout << "e/pt/eta/phi: " << itPF->energy() << "/" << itPF->pt() << "/" << itPF->eta() << "/" << itPF->phi() << std::endl;
+    std::cout << "profile from PFCand: " << itPF->hcalDepthEnergyFractions()[0] << " -- " <<itPF->hcalDepthEnergyFractions()[1] << " -- " << itPF->hcalDepthEnergyFractions()[2] << " -- " << itPF->hcalDepthEnergyFractions()[3] << " -- " << itPF->hcalDepthEnergyFractions()[4] << " -- " << itPF->hcalDepthEnergyFractions()[5] << " -- " << itPF->hcalDepthEnergyFractions()[6] << " -- " << std::endl;
     // Kinematics
     //==============================    
-    pPF->pt     = itPF->pt();
-    pPF->eta    = itPF->eta();
-    pPF->phi    = itPF->phi();
-    pPF->m      = itPF->mass();
-    pPF->e      = itPF->energy();
-    pPF->q      = itPF->charge();
-    pPF->pfType = itPF->particleId();
-    pPF->ecalE  = itPF->ecalEnergy();
-    pPF->hcalE  = itPF->hcalEnergy();
+    pPF->pt        = itPF->pt();
+    pPF->eta       = itPF->eta();
+    pPF->phi       = itPF->phi();
+    pPF->m         = itPF->mass();
+    pPF->e         = itPF->energy();
+    pPF->q         = itPF->charge();
+    pPF->pfType    = itPF->particleId();
+    pPF->ecalE     = itPF->ecalEnergy();
+    pPF->hcalE     = itPF->hcalEnergy();
     pPF->avgdepth  = depth(&(*itPF),pPF,iSimHits,iRecNumber);
+
+    for(unsigned int i0 = 0; i0 < itPF->hcalDepthEnergyFractions().size(); i0++) pPF->depthFrac[i0] = itPF->hcalDepthEnergyFractions()[i0];
+
+    float dRmin  = 999.;
+    for(unsigned int i0 = 0; i0 < eta.size(); i0++){
+      float dR = deltaR( eta[i0], phi[i0], itPF->eta(), itPF->phi());
+      if (dR < dRmin) dRmin = dR; 
+    }
+    bool match    = 0;
+    if ( dRmin < 0.3 && genE>0 ) match = 1;
+    pPF->genMatch = match;
+    std::cout << "Gen match: " << match << std::endl;
   } 
 }
 float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber) { 
     float lTotRho  = 0; 
     float lTotE    = 0;
-    //Get Calo Depth of PF Clusters
+	    //Get Calo Depth of PF Clusters
     float lRhoE    = iPF->positionAtECALEntrance().rho();
     assert(!iPF->elementsInBlocks().empty() );
     //iPFPart->fraction.clear();
@@ -109,15 +156,17 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
     //iPFPart->depth.clear();
     //iPFPart->gene.clear();
     for(int i0 = 0; i0 < 7; i0++) { 
-      iPFPart->depthE[i0]      = 0; 
-      iPFPart->depthFrac[i0]   = 0; 
-      iPFPart->depthESum[i0]   = 0; 
+      iPFPart->depthE[i0]       = 0; 
+      iPFPart->depthFrac[i0]    = 0; 
+      iPFPart->depthESum[i0]    = 0; 
+      iPFPart->depthgenE[i0]    = 0;
+      iPFPart->depthgenESum[i0] = 0;
     }
     //std::cout << "# of blocks: " << iPF->elementsInBlocks().size() << std::endl;
-    std::cout << "PF energy: " << iPF->energy() << "\t eta: " << iPF->eta() << "\t phi: " << iPF->phi() << std::endl;
+    //std::cout << "PF energy: " << iPF->energy() << "\t eta: " << iPF->eta() << "\t phi: " << iPF->phi() << std::endl;
     for(unsigned int i0 = 0; i0 < iPF->elementsInBlocks().size(); i0++ ) { 
       if(i0 >= 1) break; //consider only first block
-      std::cout << "Block " << i0 << " of " << iPF->elementsInBlocks().size() << std::endl;
+      std::cout << "Block " << i0 << " of " << iPF->elementsInBlocks().size() - 1 << std::endl;
       reco::PFBlockRef blockRef = iPF->elementsInBlocks()[i0].first;
       if(blockRef.isNull()) continue;
       const reco::PFBlock& block = *blockRef;
@@ -130,7 +179,8 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
         //PFBlockElement::Type type = elements[iEle].type();
         //assert( type == PFBlockElement::HCAL );
 	// Find the tracks in the block
-	if(elements[iEle].type() != 5 && elements[iEle].type() != 4) continue; //consider only HCAL element of PF cand 
+        std::cout << "Element type: " << elements[iEle].type() << std::endl;
+	if(elements[iEle].type() != 5) continue;// && elements[iEle].type() != 4) continue; //consider only HCAL element of PF cand 
         //std::cout << "Element type: " <<  elements[iEle].type() << ", energy: " << iPF->energy() << " (eta,phi) = (" << iPF->eta() << "," << iPF->phi() << std::endl;
 	reco::PFClusterRef pCluster = elements[iEle].clusterRef();
 	if(pCluster.isNull()) continue;
@@ -139,15 +189,15 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
 	std::fill(energyPerDepth.begin(), energyPerDepth.end(), 0.0);
 	std::fill(genenergyPerDepth.begin(), genenergyPerDepth.end(), 0.0);
 	float ecalESum = 0.;
-   	for( int x = 0; x < 7; ++x){ std::cout << iPF->hcalDepthEnergyFractions()[x] << " - ";}
-	std::cout << "\n";
+   	//for( int x = 0; x < 7; ++x){ std::cout << iPF->hcalDepthEnergyFractions()[x] << " - ";}
+	//std::cout << "\n";
 	for (auto & hitRefAndFrac : pCluster->recHitFractions()) {
 	  const auto & hit = *hitRefAndFrac.recHitRef();
 	  if (DetId(hit.detId()).det() == DetId::Hcal) {
 
 	    if (hit.depth() == 0) continue;
 	    HcalDetId pDetId(hit.detId());
-            std::cout << "CL depth: " << hit.depth() << "\tenergy: " << hit.energy() << "\tieta: " << pDetId.ieta() << "\tiphi: " << pDetId.iphi() << std::endl;
+            //std::cout << "CL depth: " << hit.depth() << "\tenergy: " << hit.energy() << "\tieta: " << pDetId.ieta() << "\tiphi: " << pDetId.iphi() << std::endl;
 	    //iPFPart->ieta.push_back(pDetId.ieta());
 	    //iPFPart->iphi.push_back(pDetId.iphi());
 	    //iPFPart->depth.push_back(pDetId.depth());
@@ -169,6 +219,7 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
 	  }
 	}
 	double sum = std::accumulate(energyPerDepth.begin(), energyPerDepth.end(), 0.);
+	std::cout << "sum: " << sum << std::endl;
 	if (sum > 0) {
 	  for (unsigned int i = 0; i < energyPerDepth.size(); ++i) {
 	    iPFPart->depthE[i]        = energyPerDepth[i];
@@ -178,6 +229,7 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
 	    iPFPart->depthgenESum[i]  += genenergyPerDepth[i];
 	  }
 	}
+	std::cout << "Profile from calc: " << energyPerDepth[0] << " -- "<< energyPerDepth[1] << " -- " << energyPerDepth[2] << " -- " << energyPerDepth[3] << " -- " << energyPerDepth[4] << " -- " << energyPerDepth[5] << " -- " << energyPerDepth[6] << std::endl;
 	iPFPart->ecalSum = ecalESum;
 	if(pCluster.isNull()) continue;
 	lTotRho += (pCluster->position().rho() - lRhoE)*pCluster->energy();
@@ -187,7 +239,50 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
     }
     if(lTotE == 0) return 0;
     return lTotRho/lTotE;
+    //std::cout << iPFPart->depthE[0] << " - " << iPFPart->depthE[1] << " -- " << iPFPart->depthE[2] << " -- " << iPFPart->depthE[3] << " -- " << iPFPart->depthE[4] << " -- " << iPFPart->depthE[5] << " -- " << iPFPart->depthE[6] << std::endl; 
 }
+
+
+
+float FillerPF::depthGenSum(const reco::PFCandidate *iPF,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber) {
+    float gensum = 0.;
+    assert(!iPF->elementsInBlocks().empty() );
+    for(unsigned int i0 = 0; i0 < iPF->elementsInBlocks().size(); i0++ ) {
+      if(i0 >= 1) break; //consider only first block
+      reco::PFBlockRef blockRef = iPF->elementsInBlocks()[i0].first;
+      if(blockRef.isNull()) continue;
+      const reco::PFBlock& block = *blockRef;
+      const edm::OwnVector<reco::PFBlockElement>& elements = block.elements();
+      float totGenE    = 0;
+      //std::cout << "# of elements: " << elements.size() << std::endl; 
+      for(unsigned int iEle=0; iEle< elements.size(); iEle++) {
+        //std::cout << "Element " << iEle << " of " << elements.size() - 1 <<std::endl;
+        //PFBlockElement::Type type = elements[iEle].type();
+        //assert( type == PFBlockElement::HCAL );
+        // Find the tracks in the block
+        if(elements[iEle].type() != 5) continue;// && elements[iEle].type() != 4) continue; //consider only HCAL element of PF cand 
+        //std::cout << "Element type: " <<  elements[iEle].type() << ", energy: " << iPF->energy() << " (eta,phi) = (" << iPF->eta() << "," << iPF->phi() << std::endl;
+        reco::PFClusterRef pCluster = elements[iEle].clusterRef();
+        if(pCluster.isNull()) continue;
+        std::array<double,7> genenergyPerDepth;
+        std::fill(genenergyPerDepth.begin(), genenergyPerDepth.end(), 0.0);
+        for (auto & hitRefAndFrac : pCluster->recHitFractions()) {
+          const auto & hit = *hitRefAndFrac.recHitRef();
+          if (DetId(hit.detId()).det() == DetId::Hcal) {
+
+            if (hit.depth() == 0) continue;
+            HcalDetId pDetId(hit.detId());
+            float tmpgenE = float(genE(pDetId,iSimHits,iRecNumber));
+            genenergyPerDepth[hit.depth()-1] += hitRefAndFrac.fraction()*tmpgenE;
+          }
+        }
+        gensum = std::accumulate(genenergyPerDepth.begin(), genenergyPerDepth.end(), 0.);
+      }
+    }
+    return gensum;
+}
+
+
 double FillerPF::genE(HcalDetId &iDetId,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber) { 
   double samplingFactor = 1;
   if(iDetId.subdet() == HcalBarrel) {
