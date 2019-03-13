@@ -95,7 +95,7 @@ void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
   for (reco::GenParticleCollection::const_iterator itGenP = GenCol->begin(); itGenP!=GenCol->end(); ++itGenP){
        genId++;
        std::cout << "------Gen particle " << genId << " ------" << std::endl;
-       std::cout << "pdg/pt/eta/phi" << itGenP->pdgId() << "/" << itGenP->pt() << "/" << itGenP->eta() << "/" << itGenP->phi() << std::endl;
+       std::cout << "pdg/pt/eta/phi: " << itGenP->pdgId() << "/" << itGenP->pt() << "/" << itGenP->eta() << "/" << itGenP->phi() << std::endl;
        pdgId.push_back(itGenP->pdgId()); eta.push_back(itGenP->eta()); phi.push_back(itGenP->phi());
   }
 
@@ -115,7 +115,7 @@ void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
     new(rArray[index]) baconhep::TPFPart();
     baconhep::TPFPart *pPF = (baconhep::TPFPart*) rArray[index];
 
-    //std::cout << "------PF Candidate " << pId << " ------" << std::endl;
+    std::cout << "------PF Candidate " << pId << " ------" << std::endl;
     //std::cout << "e/pt/eta/phi: " << itPF->energy() << "/" << itPF->pt() << "/" << itPF->eta() << "/" << itPF->phi() << std::endl;
     // Kinematics
     //==============================    
@@ -132,7 +132,7 @@ void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
 
     for(unsigned int i0 = 0; i0 < itPF->hcalDepthEnergyFractions().size(); i0++) 
 	pPF->depthFrac[i0] = itPF->hcalDepthEnergyFractions()[i0];
-    std::cout << "pftype/profile from PFCand: " << itPF->particleId() << "/" << itPF->hcalDepthEnergyFractions()[0] << " -- " <<itPF->hcalDepthEnergyFractions()[1] << " -- " << itPF->hcalDepthEnergyFractions()[2] << " -- " << itPF->hcalDepthEnergyFractions()[3] << " -- " << itPF->hcalDepthEnergyFractions()[4] << " -- " << itPF->hcalDepthEnergyFractions()[5] << " -- " << itPF->hcalDepthEnergyFractions()[6] << " -- " << std::endl;
+    std::cout << "-- pftype/pt/eta/phi:" << itPF->particleId() << "/" << itPF->pt() << "/" << itPF->eta() << "/" << itPF->phi() << "\t\t-- depthFrac0..6: " << itPF->hcalDepthEnergyFractions()[0] << " -- " <<itPF->hcalDepthEnergyFractions()[1] << " -- " << itPF->hcalDepthEnergyFractions()[2] << " -- " << itPF->hcalDepthEnergyFractions()[3] << " -- " << itPF->hcalDepthEnergyFractions()[4] << " -- " << itPF->hcalDepthEnergyFractions()[5] << " -- " << itPF->hcalDepthEnergyFractions()[6] << "\n" << std::endl;
 
     float dRmin  = 999.;
     for(unsigned int i0 = 0; i0 < eta.size(); i0++){

@@ -44,7 +44,7 @@ process.hbheprerecoM3.algorithm.__setattr__('useM3',cms.bool(True))
 
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(10)
 )
 
 # Input source
@@ -105,8 +105,8 @@ process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,proces
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
-from L1Trigger.Configuration.customiseReEmul import L1TReEmulMCFromRAWSimHcalTP 
-process = L1TReEmulMCFromRAWSimHcalTP(process)
+#from L1Trigger.Configuration.customiseReEmul import L1TReEmulMCFromRAWSimHcalTP 
+#process = L1TReEmulMCFromRAWSimHcalTP(process)
 
 #do not add changes to your config after this point (unless you know what you are doing)
 #from FWCore.ParameterSet.Utilities import convertToUnscheduled

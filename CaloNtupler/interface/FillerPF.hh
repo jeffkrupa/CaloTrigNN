@@ -22,13 +22,13 @@
 #include "DataFormats/ParticleFlowReco/interface/PFBlockElementTrack.h"
 #include "DataFormats/ParticleFlowReco/interface/PFBlockElementCluster.h"
 #include "DataFormats/ParticleFlowReco/interface/PFBlockElement.h"
-#include "RecoParticleFlow/PFProducer/interface/PFAlgo.h"
+//#include "RecoParticleFlow/PFProducer/interface/PFAlgo.h"
 
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
-class PFAlgo;
+//class PFAlgo;
 class TClonesArray;
 class FillerPF
   {
@@ -64,7 +64,7 @@ class FillerPF
     edm::EDGetTokenT<reco::PFClusterCollection>   fTokPFClustSName;
     HcalSimParameterMap fSimParameterMap;
 
-    private:
-      std::auto_ptr<PFAlgo> pfAlgo_;
+    //private:
+     // std::auto_ptr<PFAlgo> pfAlgo_;
 };
 #endif

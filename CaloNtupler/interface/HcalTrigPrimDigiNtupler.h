@@ -9,7 +9,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
 #include "DataFormats/FEDRawData/interface/FEDRawDataCollection.h"
-#include "CaloTrigNN/CaloNtupler/interface/HcalNtuple.h"
+//#include "CaloTrigNN/CaloNtupler/interface/HcalNtuple.h"
 #include "CaloTrigNN/CaloNtupler/interface/FillerRH.hh"
 #include "CaloTrigNN/CaloNtupler/interface/FillerPF.hh"
 #include "CaloTrigNN/DataFormats/interface/THcalDep.hh"
