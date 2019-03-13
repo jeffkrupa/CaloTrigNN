@@ -19,7 +19,7 @@ namespace baconhep
 
     float pt,eta,phi,m,e,ecalE,hcalE,avgdepth,ecalSum;
     int   q,pfType;
-    bool  genMatch;
+    int genMatch;
     std::array<double,7> depthE;
     std::array<double,7> depthgenE;
     std::array<double,7> depthgenESum;

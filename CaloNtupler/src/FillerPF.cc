@@ -1,4 +1,5 @@
 #include "DataFormats/ParticleFlowReco/interface/PFBlock.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlockElement.h"
 #include "DataFormats/ParticleFlowReco/interface/PFBlockFwd.h"
 #include "CaloTrigNN/CaloNtupler/interface/FillerPF.hh"
 #include "CaloTrigNN/DataFormats/interface/TPFPart.hh"
@@ -114,9 +115,8 @@ void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
     new(rArray[index]) baconhep::TPFPart();
     baconhep::TPFPart *pPF = (baconhep::TPFPart*) rArray[index];
 
-    std::cout << "------PF Candidate " << pId << " ------" << std::endl;
-    std::cout << "e/pt/eta/phi: " << itPF->energy() << "/" << itPF->pt() << "/" << itPF->eta() << "/" << itPF->phi() << std::endl;
-    std::cout << "profile from PFCand: " << itPF->hcalDepthEnergyFractions()[0] << " -- " <<itPF->hcalDepthEnergyFractions()[1] << " -- " << itPF->hcalDepthEnergyFractions()[2] << " -- " << itPF->hcalDepthEnergyFractions()[3] << " -- " << itPF->hcalDepthEnergyFractions()[4] << " -- " << itPF->hcalDepthEnergyFractions()[5] << " -- " << itPF->hcalDepthEnergyFractions()[6] << " -- " << std::endl;
+    //std::cout << "------PF Candidate " << pId << " ------" << std::endl;
+    //std::cout << "e/pt/eta/phi: " << itPF->energy() << "/" << itPF->pt() << "/" << itPF->eta() << "/" << itPF->phi() << std::endl;
     // Kinematics
     //==============================    
     pPF->pt        = itPF->pt();
@@ -128,25 +128,29 @@ void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
     pPF->pfType    = itPF->particleId();
     pPF->ecalE     = itPF->ecalEnergy();
     pPF->hcalE     = itPF->hcalEnergy();
-    pPF->avgdepth  = depth(&(*itPF),pPF,iSimHits,iRecNumber);
+    //pPF->avgdepth  = depth(&(*itPF),pPF,iSimHits,iRecNumber);
 
-    for(unsigned int i0 = 0; i0 < itPF->hcalDepthEnergyFractions().size(); i0++) pPF->depthFrac[i0] = itPF->hcalDepthEnergyFractions()[i0];
+    for(unsigned int i0 = 0; i0 < itPF->hcalDepthEnergyFractions().size(); i0++) 
+	pPF->depthFrac[i0] = itPF->hcalDepthEnergyFractions()[i0];
+    std::cout << "pftype/profile from PFCand: " << itPF->particleId() << "/" << itPF->hcalDepthEnergyFractions()[0] << " -- " <<itPF->hcalDepthEnergyFractions()[1] << " -- " << itPF->hcalDepthEnergyFractions()[2] << " -- " << itPF->hcalDepthEnergyFractions()[3] << " -- " << itPF->hcalDepthEnergyFractions()[4] << " -- " << itPF->hcalDepthEnergyFractions()[5] << " -- " << itPF->hcalDepthEnergyFractions()[6] << " -- " << std::endl;
 
     float dRmin  = 999.;
     for(unsigned int i0 = 0; i0 < eta.size(); i0++){
       float dR = deltaR( eta[i0], phi[i0], itPF->eta(), itPF->phi());
-      if (dR < dRmin) dRmin = dR; 
+      if (dR < dRmin) 
+	dRmin = dR; 
     }
-    bool match    = 0;
-    if ( dRmin < 0.3 && genE>0 ) match = 1;
+    int match    = 0;
+    if ( dRmin < 0.3 && genE>0 ) 
+	match = 1;
     pPF->genMatch = match;
-    std::cout << "Gen match: " << match << std::endl;
+    //if (match == 1) std::cout << "Gen match: " << match << std::endl;
   } 
 }
 float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber) { 
     float lTotRho  = 0; 
     float lTotE    = 0;
-	    //Get Calo Depth of PF Clusters
+    //Get Calo Depth of PF Clusters
     float lRhoE    = iPF->positionAtECALEntrance().rho();
     assert(!iPF->elementsInBlocks().empty() );
     //iPFPart->fraction.clear();
@@ -155,13 +159,13 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
     //iPFPart->iphi.clear();
     //iPFPart->depth.clear();
     //iPFPart->gene.clear();
-    for(int i0 = 0; i0 < 7; i0++) { 
+    /*for(int i0 = 0; i0 < 7; i0++) { 
       iPFPart->depthE[i0]       = 0; 
       iPFPart->depthFrac[i0]    = 0; 
       iPFPart->depthESum[i0]    = 0; 
       iPFPart->depthgenE[i0]    = 0;
       iPFPart->depthgenESum[i0] = 0;
-    }
+    }*/
     //std::cout << "# of blocks: " << iPF->elementsInBlocks().size() << std::endl;
     //std::cout << "PF energy: " << iPF->energy() << "\t eta: " << iPF->eta() << "\t phi: " << iPF->phi() << std::endl;
     for(unsigned int i0 = 0; i0 < iPF->elementsInBlocks().size(); i0++ ) { 
@@ -179,8 +183,11 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
         //PFBlockElement::Type type = elements[iEle].type();
         //assert( type == PFBlockElement::HCAL );
 	// Find the tracks in the block
-        std::cout << "Element type: " << elements[iEle].type() << std::endl;
+        //std::cout << "Element type: " << elements[iEle].type() << std::endl;
 	if(elements[iEle].type() != 5) continue;// && elements[iEle].type() != 4) continue; //consider only HCAL element of PF cand 
+	//PFBlockElement::Type type = elements[iEle].type();
+	//assert( type == PFBlockElement::HCAL );
+
         //std::cout << "Element type: " <<  elements[iEle].type() << ", energy: " << iPF->energy() << " (eta,phi) = (" << iPF->eta() << "," << iPF->phi() << std::endl;
 	reco::PFClusterRef pCluster = elements[iEle].clusterRef();
 	if(pCluster.isNull()) continue;
@@ -219,8 +226,8 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
 	  }
 	}
 	double sum = std::accumulate(energyPerDepth.begin(), energyPerDepth.end(), 0.);
-	std::cout << "sum: " << sum << std::endl;
-	if (sum > 0) {
+	//std::cout << "sum: " << sum << std::endl;
+	/*if (sum > 0) {
 	  for (unsigned int i = 0; i < energyPerDepth.size(); ++i) {
 	    iPFPart->depthE[i]        = energyPerDepth[i];
 	    iPFPart->depthgenE[i]     = genenergyPerDepth[i];
@@ -228,8 +235,8 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
 	    iPFPart->depthESum[i]     += energyPerDepth[i];
 	    iPFPart->depthgenESum[i]  += genenergyPerDepth[i];
 	  }
-	}
-	std::cout << "Profile from calc: " << energyPerDepth[0] << " -- "<< energyPerDepth[1] << " -- " << energyPerDepth[2] << " -- " << energyPerDepth[3] << " -- " << energyPerDepth[4] << " -- " << energyPerDepth[5] << " -- " << energyPerDepth[6] << std::endl;
+	}*/
+	std::cout << "Profile from calc: " << energyPerDepth[0]/sum << " -- "<< energyPerDepth[1]/sum << " -- " << energyPerDepth[2]/sum << " -- " << energyPerDepth[3]/sum << " -- " << energyPerDepth[4]/sum << " -- " << energyPerDepth[5]/sum << " -- " << energyPerDepth[6]/sum << std::endl;
 	iPFPart->ecalSum = ecalESum;
 	if(pCluster.isNull()) continue;
 	lTotRho += (pCluster->position().rho() - lRhoE)*pCluster->energy();
