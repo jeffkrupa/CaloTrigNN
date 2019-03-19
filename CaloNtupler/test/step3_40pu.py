@@ -2,12 +2,12 @@
 # using: 
 # Revision: 1.19 
 # Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
-# with command line options: step2 --conditions auto:phase1_2018_realistic -s DIGI:pdigi_valid,L1,DIGI2RAW,HLT:@relval2018 --datatier GEN-SIM-DIGI-RAW -n 10 --geometry DB:Extended --era Run2_2018 --eventcontent FEVTDEBUGHLT --filein file:step1.root --fileout file:step2.root
+# with command line options: step3 --conditions auto:phase1_2017_realistic --pileup_input das:/RelValMinBias_13/CMSSW_10_0_0_pre2-100X_mc2017_realistic_v1-v1/GEN-SIM -n 10 --era Run2_2017 --eventcontent RECOSIM --runUnscheduled -s RAW2DIGI,L1Reco,RECO,RECOSIM --datatier GEN-SIM-RECO --pileup AVE_35_BX_25ns --geometry DB:Extended --filein file:step2.root --fileout file:step3.root
 import FWCore.ParameterSet.Config as cms
 
 from Configuration.StandardSequences.Eras import eras
 
-process = cms.Process('HLT',eras.Run2_2018)
+process = cms.Process('RECO',eras.Run2_2018)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -18,12 +18,31 @@ process.load('Configuration.EventContent.EventContent_cff')
 process.load('SimGeneral.MixingModule.mix_POISSON_average_cfi')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
-process.load('Configuration.StandardSequences.Digi_cff')
-process.load('Configuration.StandardSequences.SimL1Emulator_cff')
-process.load('Configuration.StandardSequences.DigiToRaw_cff')
-process.load('HLTrigger.Configuration.HLT_GRun_cff')
+process.load('Configuration.StandardSequences.RawToDigi_cff')
+process.load('Configuration.StandardSequences.L1Reco_cff')
+process.load('Configuration.StandardSequences.Reconstruction_cff')
+process.load('Configuration.StandardSequences.RecoSim_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+
+process.hbheprereco.saveInfos = cms.bool(True)
+process.hbheprerecoMahi = process.hbheprereco.clone()
+process.hbheprerecoMahi.algorithm.__setattr__('useMahi',cms.bool(True))
+process.hbheprerecoMahi.algorithm.__setattr__('useM2',cms.bool(False))
+process.hbheprerecoMahi.algorithm.__setattr__('useM3',cms.bool(False))
+process.hbheprerecoMahi.algorithm.__setattr__('applyPedConstraint',cms.bool(False))
+process.hbheprerecoMahi.algorithm.__setattr__('applyTimeConstraint',cms.bool(False))
+
+process.hbheprerecoM2 = process.hbheprereco.clone()
+process.hbheprerecoM2.algorithm.__setattr__('useMahi',cms.bool(False))
+process.hbheprerecoM2.algorithm.__setattr__('useM2',cms.bool(True))
+process.hbheprerecoM2.algorithm.__setattr__('useM3',cms.bool(False))
+
+process.hbheprerecoM3 = process.hbheprereco.clone()
+process.hbheprerecoM3.algorithm.__setattr__('useMahi',cms.bool(False))
+process.hbheprerecoM3.algorithm.__setattr__('useM2',cms.bool(False))
+process.hbheprerecoM3.algorithm.__setattr__('useM3',cms.bool(True))
+
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
@@ -31,27 +50,7 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-    dropDescendantsOfDroppedBranches = cms.untracked.bool(False),
-    fileNames = cms.untracked.vstring('file:step1.root'),
-    inputCommands = cms.untracked.vstring(
-        'keep *', 
-        'drop *_genParticles_*_*', 
-        'drop *_genParticlesForJets_*_*', 
-        'drop *_kt4GenJets_*_*', 
-        'drop *_kt6GenJets_*_*', 
-        'drop *_iterativeCone5GenJets_*_*', 
-        'drop *_ak4GenJets_*_*', 
-        'drop *_ak7GenJets_*_*', 
-        'drop *_ak8GenJets_*_*', 
-        'drop *_ak4GenJetsNoNu_*_*', 
-        'drop *_ak8GenJetsNoNu_*_*', 
-        'drop *_genCandidatesForMET_*_*', 
-        'drop *_genParticlesForMETAllVisible_*_*', 
-        'drop *_genMetCalo_*_*', 
-        'drop *_genMetCaloAndNonPrompt_*_*', 
-        'drop *_genMetTrue_*_*', 
-        'drop *_genMetIC5GenJs_*_*'
-    ),
+    fileNames = cms.untracked.vstring('file:step2_40pu.root'),
     secondaryFileNames = cms.untracked.vstring()
 )
 
@@ -61,29 +60,31 @@ process.options = cms.untracked.PSet(
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
-    annotation = cms.untracked.string('step2 nevts:10'),
+    annotation = cms.untracked.string('step3 nevts:10'),
     name = cms.untracked.string('Applications'),
     version = cms.untracked.string('$Revision: 1.19 $')
 )
 
 # Output definition
-process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
+process.RAWRECOSIMHLTEventContent.outputCommands.extend(process.SimG4CoreRAW.outputCommands)
+process.RAWRECOSIMHLTEventContent.outputCommands.extend(process.SimCalorimetryRAW.outputCommands)
+process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
     dataset = cms.untracked.PSet(
-        dataTier = cms.untracked.string('GEN-SIM-DIGI-RAW'),
+        dataTier = cms.untracked.string('GEN-SIM-RECO-RAW'),
         filterName = cms.untracked.string('')
     ),
-    fileName = cms.untracked.string('file:step2.root'),
-    outputCommands = process.FEVTDEBUGHLTEventContent.outputCommands,
+    fileName = cms.untracked.string('file:step3.root'),
+    outputCommands = process.RAWRECOSIMHLTEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
 )
 
-# Additional output definition
+# Other statements
 process.mix.input.nbPileupEvents.averageNumber = cms.double(40.000000)
 process.mix.bunchspace = cms.int32(25)
 process.mix.minBunch = cms.int32(-12)
 process.mix.maxBunch = cms.int32(3)
 process.mix.input.fileNames = cms.untracked.vstring([
-'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10000/6810F3EA-6D47-E811-8D64-FA163EB2D127.root',
+'fille:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10000/6810F3EA-6D47-E811-8D64-FA163EB2D127.root',
 'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10000/6810F3EA-6D47-E811-8D64-FA163EB2D127.root',
 'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10000/18E0906B-A747-E811-A8F3-FA163EE42437.root',
 'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10000/302848D5-6C47-E811-8DBB-FA163EE2C022.root',
@@ -139,42 +140,47 @@ process.mix.input.fileNames = cms.untracked.vstring([
 'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10002/DC10A8D7-6048-E811-822E-FA163EAC15A1.root',
 'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10002/32BAC90C-6048-E811-9ACB-FA163E5B0035.root',
 'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10002/44A69393-EC49-E811-9620-FA163ED42175.root'
-
 ])
-#process.mix.digitizers = cms.PSet(process.theDigitizersValid)
-#from Configuration.AlCa.GlobalTag import GlobalTag
-# Other statements
 process.mix.digitizers = cms.PSet(process.theDigitizersValid)
 from Configuration.AlCa.GlobalTag import GlobalTag
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2017_realistic', '')
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2018_realistic', '')
 
-process.digitisation_step = cms.Path(process.pdigi_valid)
-process.L1simulation_step = cms.Path(process.SimL1Emulator)
-process.digi2raw_step = cms.Path(process.DigiToRaw)
+process.recoPath = cms.Path(
+    process.hbheprereco
+    *process.hbheprerecoMahi
+    *process.hbheprerecoM2
+    *process.hbheprerecoM3
+)
+process.load('CaloTrigNN.CaloNtupler.hcaltpntupler_cfi')
+
+# Path and EndPath definitions
+process.raw2digi_step = cms.Path(process.RawToDigi)
+process.L1Reco_step = cms.Path(process.L1Reco)
+process.reconstruction_step = cms.Path(process.reconstruction)
+process.recosim_step = cms.Path(process.recosim)
+process.ntuple_step = cms.Path(process.simHcalTriggerPrimitiveNtuple)
 process.endjob_step = cms.EndPath(process.endOfProcess)
-process.FEVTDEBUGHLToutput_step = cms.EndPath(process.FEVTDEBUGHLToutput)
+process.RECOSIMoutput_step = cms.EndPath(process.RECOSIMoutput)
 
 # Schedule definition
-process.schedule = cms.Schedule(process.digitisation_step,process.L1simulation_step,process.digi2raw_step)
-#process.schedule.extend(process.HLTSchedule)
-process.schedule.extend([process.endjob_step,process.FEVTDEBUGHLToutput_step])
+process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,process.recoPath,process.ntuple_step,process.recosim_step,process.endjob_step)
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
-process.options.numberOfThreads=cms.untracked.uint32(8)
-process.options.numberOfStreams=cms.untracked.uint32(0)
+from L1Trigger.Configuration.customiseReEmul import L1TReEmulMCFromRAWSimHcalTP 
+#process = L1TReEmulMCFromRAWSimHcalTP(process)
 
-# customisation of the process.
+#do not add changes to your config after this point (unless you know what you are doing)
+#from FWCore.ParameterSet.Utilities import convertToUnscheduled
+#process=convertToUnscheduled(process)
 
-# Automatic addition of the customisation function from HLTrigger.Configuration.customizeHLTforMC
-#from HLTrigger.Configuration.customizeHLTforMC import customizeHLTforMC 
-
-#call to customisation function customizeHLTforMC imported from HLTrigger.Configuration.customizeHLTforMC
-#process = customizeHLTforMC(process)
-
-# End of customisation functions
 
 # Customisation from command line
+
+#Have logErrorHarvester wait for the same EDProducers to finish as those providing data for the OutputModule
+#from FWCore.Modules.logErrorHarvester_cff import customiseLogErrorHarvesterUsingOutputCommands
+#process = customiseLogErrorHarvesterUsingOutputCommands(process)
 
 # Add early deletion of temporary data products to reduce peak memory need
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete

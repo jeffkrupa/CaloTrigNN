@@ -94,13 +94,14 @@ void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
   int genId = 0;
   for (reco::GenParticleCollection::const_iterator itGenP = GenCol->begin(); itGenP!=GenCol->end(); ++itGenP){
        genId++;
-       std::cout << "------Gen particle " << genId << " ------" << std::endl;
-       std::cout << "pdg/pt/eta/phi: " << itGenP->pdgId() << "/" << itGenP->pt() << "/" << itGenP->eta() << "/" << itGenP->phi() << std::endl;
+       //std::cout << "------Gen particle " << genId << " ------" << std::endl;
+       //std::cout << "pdg/pt/eta/phi: " << itGenP->pdgId() << "/" << itGenP->pt() << "/" << itGenP->eta() << "/" << itGenP->phi() << std::endl;
        pdgId.push_back(itGenP->pdgId()); eta.push_back(itGenP->eta()); phi.push_back(itGenP->phi());
   }
 
   TClonesArray &rArray = *array;
   int pId = 0; 
+  int nGenMatch = 0;
   for(reco::PFCandidateCollection::const_iterator itPF = PFCol->begin(); itPF!=PFCol->end(); itPF++) {
     //std::cout << "PF Candidate: " << pId << std::endl;
     pId++;
@@ -115,7 +116,7 @@ void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
     new(rArray[index]) baconhep::TPFPart();
     baconhep::TPFPart *pPF = (baconhep::TPFPart*) rArray[index];
 
-    std::cout << "------PF Candidate " << pId << " ------" << std::endl;
+    //std::cout << "------PF Candidate " << pId << " ------" << std::endl;
     //std::cout << "e/pt/eta/phi: " << itPF->energy() << "/" << itPF->pt() << "/" << itPF->eta() << "/" << itPF->phi() << std::endl;
     // Kinematics
     //==============================    
@@ -132,7 +133,7 @@ void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
 
     for(unsigned int i0 = 0; i0 < itPF->hcalDepthEnergyFractions().size(); i0++) 
 	pPF->depthFrac[i0] = itPF->hcalDepthEnergyFractions()[i0];
-    std::cout << "-- pftype/pt/eta/phi:" << itPF->particleId() << "/" << itPF->pt() << "/" << itPF->eta() << "/" << itPF->phi() << "\t\t-- depthFrac0..6: " << itPF->hcalDepthEnergyFractions()[0] << " -- " <<itPF->hcalDepthEnergyFractions()[1] << " -- " << itPF->hcalDepthEnergyFractions()[2] << " -- " << itPF->hcalDepthEnergyFractions()[3] << " -- " << itPF->hcalDepthEnergyFractions()[4] << " -- " << itPF->hcalDepthEnergyFractions()[5] << " -- " << itPF->hcalDepthEnergyFractions()[6] << "\n" << std::endl;
+    //std::cout << "\n" << "CANDIDATE: pftype/pt/eta/phi/hcalE/rawhcalE: " << itPF->particleId() << "/" << itPF->pt() << "/" << itPF->eta() << "/" << itPF->phi() << "/" << itPF->hcalEnergy() << "/" << itPF->rawHcalEnergy() << "\t\t-- depthFrac0..6: " << itPF->hcalDepthEnergyFractions()[0] << " -- " <<itPF->hcalDepthEnergyFractions()[1] << " -- " << itPF->hcalDepthEnergyFractions()[2] << " -- " << itPF->hcalDepthEnergyFractions()[3] << " -- " << itPF->hcalDepthEnergyFractions()[4] << " -- " << itPF->hcalDepthEnergyFractions()[5] << " -- " << itPF->hcalDepthEnergyFractions()[6] << "\n" << std::endl;
 
     float dRmin  = 999.;
     for(unsigned int i0 = 0; i0 < eta.size(); i0++){
@@ -141,10 +142,13 @@ void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
 	dRmin = dR; 
     }
     int match    = 0;
-    if ( dRmin < 0.3 && genE>0 ) 
+    if ( dRmin < 0.2 && genE>0 ){ 
 	match = 1;
+        ++nGenMatch;
+    }
     pPF->genMatch = match;
     //if (match == 1) std::cout << "Gen match: " << match << std::endl;
+    if (itPF == PFCol->end() - 1){ pPF->NGenMatch = nGenMatch; } 
   } 
 }
 float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber) { 
@@ -170,7 +174,7 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
     //std::cout << "PF energy: " << iPF->energy() << "\t eta: " << iPF->eta() << "\t phi: " << iPF->phi() << std::endl;
     for(unsigned int i0 = 0; i0 < iPF->elementsInBlocks().size(); i0++ ) { 
       if(i0 >= 1) break; //consider only first block
-      std::cout << "Block " << i0 << " of " << iPF->elementsInBlocks().size() - 1 << std::endl;
+      //std::cout << "Block " << i0 << " of " << iPF->elementsInBlocks().size() - 1 << std::endl;
       reco::PFBlockRef blockRef = iPF->elementsInBlocks()[i0].first;
       if(blockRef.isNull()) continue;
       const reco::PFBlock& block = *blockRef;
@@ -179,12 +183,12 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
       float totRecHitE = 0; 
       //std::cout << "# of elements: " << elements.size() << std::endl; 
       for(unsigned int iEle=0; iEle< elements.size(); iEle++) {
-	std::cout << "Element " << iEle << " of " << elements.size() - 1 <<std::endl;
         //PFBlockElement::Type type = elements[iEle].type();
         //assert( type == PFBlockElement::HCAL );
 	// Find the tracks in the block
         //std::cout << "Element type: " << elements[iEle].type() << std::endl;
 	if(elements[iEle].type() != 5) continue;// && elements[iEle].type() != 4) continue; //consider only HCAL element of PF cand 
+        assert(elements[iEle].type() == 5);
 	//PFBlockElement::Type type = elements[iEle].type();
 	//assert( type == PFBlockElement::HCAL );
 
@@ -236,7 +240,7 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
 	    iPFPart->depthgenESum[i]  += genenergyPerDepth[i];
 	  }
 	}*/
-	std::cout << "Profile from calc: " << energyPerDepth[0]/sum << " -- "<< energyPerDepth[1]/sum << " -- " << energyPerDepth[2]/sum << " -- " << energyPerDepth[3]/sum << " -- " << energyPerDepth[4]/sum << " -- " << energyPerDepth[5]/sum << " -- " << energyPerDepth[6]/sum << std::endl;
+	//std::cout << "Linked cluster: " << energyPerDepth[0]/sum << " -- "<< energyPerDepth[1]/sum << " -- " << energyPerDepth[2]/sum << " -- " << energyPerDepth[3]/sum << " -- " << energyPerDepth[4]/sum << " -- " << energyPerDepth[5]/sum << " -- " << energyPerDepth[6]/sum << std::endl;
 	iPFPart->ecalSum = ecalESum;
 	if(pCluster.isNull()) continue;
 	lTotRho += (pCluster->position().rho() - lRhoE)*pCluster->energy();

@@ -32,7 +32,7 @@ process.maxEvents = cms.untracked.PSet(
 # Input source
 process.source = cms.Source("PoolSource",
     dropDescendantsOfDroppedBranches = cms.untracked.bool(False),
-    fileNames = cms.untracked.vstring('file:step1.root'),
+    fileNames = cms.untracked.vstring('file:step1_40pu.root'),
     inputCommands = cms.untracked.vstring(
         'keep *', 
         'drop *_genParticles_*_*', 
@@ -72,7 +72,7 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
         dataTier = cms.untracked.string('GEN-SIM-DIGI-RAW'),
         filterName = cms.untracked.string('')
     ),
-    fileName = cms.untracked.string('file:step2.root'),
+    fileName = cms.untracked.string('file:step2_40pu.root'),
     outputCommands = process.FEVTDEBUGHLTEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
 )
@@ -123,22 +123,7 @@ process.mix.input.fileNames = cms.untracked.vstring([
 'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10001/6C76E095-5648-E811-A817-FA163E895918.root',
 'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10001/DC10A8D7-6048-E811-822E-FA163EAC15A1.root',
 'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10001/32BAC90C-6048-E811-9ACB-FA163E5B0035.root',
-'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10001/44A69393-EC49-E811-9620-FA163ED42175.root',
-'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10002/A0EAB1A5-7347-E811-8B59-FA163EE29F3E.root',
-'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10002/CE41EBEE-7047-E811-9E8D-FA163E088735.root',
-'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10002/2EA0920D-7447-E811-BD95-FA163EE70A79.root',
-'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10002/18473FF9-F947-E811-84C2-FA163E6659B9.root',
-'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10002/1CF9DC24-D547-E811-9F47-FA163ECA540F.root',
-'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10002/9C2137F6-F647-E811-A2EE-FA163E29CDFE.root',
-'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10002/7E1EAEEC-1D48-E811-8C38-FA163EA71BD5.root',
-'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10002/04312B0B-EF47-E811-A51C-FA163E8FE329.root',
-'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10002/D8423100-4048-E811-84AC-FA163EE42437.root',
-'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10002/BEE67D90-5648-E811-93FA-FA163EC3055A.root',
-'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10002/9EC71795-5648-E811-9165-FA163E6E06A7.root',
-'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10002/6C76E095-5648-E811-A817-FA163E895918.root',
-'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10002/DC10A8D7-6048-E811-822E-FA163EAC15A1.root',
-'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10002/32BAC90C-6048-E811-9ACB-FA163E5B0035.root',
-'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10002/44A69393-EC49-E811-9620-FA163ED42175.root'
+'file:/eos/cms/store/mc/RunIISummer18GS/MinBias_TuneCP5_13TeV-pythia8/GEN-SIM/101X_upgrade2018_realistic_v7-v1/10001/44A69393-EC49-E811-9620-FA163ED42175.root'
 
 ])
 #process.mix.digitizers = cms.PSet(process.theDigitizersValid)
@@ -161,8 +146,8 @@ process.schedule.extend([process.endjob_step,process.FEVTDEBUGHLToutput_step])
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
-process.options.numberOfThreads=cms.untracked.uint32(8)
-process.options.numberOfStreams=cms.untracked.uint32(0)
+#process.options.numberOfThreads=cms.untracked.uint32(4)
+#process.options.numberOfStreams=cms.untracked.uint32(0)
 
 # customisation of the process.
 

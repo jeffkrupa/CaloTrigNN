@@ -42,6 +42,8 @@ def parser():
     parser.add_option('--infile',  action='store', type='string', dest='infile',default='/eos/user/j/jekrupa/pf_studies/40pu_era2018_skimmed', help='infile dir')
     parser.add_option('--new',     action='store_true',           dest='new',   default=False,     		  help='if sig and bkg files are new')
     parser.add_option('--inputvars',  action='store', type='string', dest='lVars',default='depthFrac0,depthFrac1,depthFrac2,depthFrac3,depthFrac4,depthFrac5,depthFrac6,phi,eta,ecalE', help='input variables')
+    parser.add_option('--train_pt_cut', dest="train_pt_cut", type=float,default=5.0, help='pT requirement on training sample')
+    parser.add_option('--weights',     action='store_true',           dest='use_weights',           default=False,            help='weight PU and LV pT spectra')
 
     (options,args) = parser.parse_args()
     return options
@@ -81,10 +83,10 @@ def make_roc_plot(fpr, tpr, auc, pT_min, pT_max, eta_min, eta_max):
         plt.ylabel('True positive rate')
         plt.title('ROC curve: %.1f <= pT <= %.1f, %.1f <= eta <= %.1f'%(pT_min, pT_max, eta_min, eta_max))
         plt.legend(loc='best')
-        plt.savefig("plots/roc_%.1f_pt_%.1f_%.1f_eta_%.1f.png"%(pT_min, pT_max, eta_min, eta_max))
+        #plt.savefig("plots/roc_%.1f_pt_%.1f_%.1f_eta_%.1f.png"%(pT_min, pT_max, eta_min, eta_max))
         plt.savefig("plots/roc_%.1f_pt_%.1f_%.1f_eta_%.1f.pdf"%(pT_min, pT_max, eta_min, eta_max))
 
-def make_roc_curve(self, y_pred, y_test, eta_test, pt_test, pT_min, pT_max, eta_min, eta_max):
+def make_roc_curve(y_pred, y_test, eta_test, pt_test, pT_min, pT_max, eta_min, eta_max):
 
         print 'Make roc curve for kinematic region %.1f <= pT <= %.1f, %.1f <= eta <= %.1f'%(pT_min,pT_max,eta_min,eta_max)
 
@@ -92,8 +94,8 @@ def make_roc_curve(self, y_pred, y_test, eta_test, pt_test, pT_min, pT_max, eta_
         y_test_tmp = []
 
 
-        y_pred.reshape((pt_test.shape[0],1))
-        y_test.reshape((pt_test.shape[0],1))
+        #y_pred.reshape((pt_test.shape[0],1))
+        #y_test.reshape((pt_test.shape[0],1))
         y_test   = y_test.values.reshape((y_test.shape[0],1))
         pt_test  = pt_test.values.reshape((pt_test.shape[0],1))
         eta_test = eta_test.values.reshape((eta_test.shape[0],1))
@@ -109,6 +111,43 @@ def make_roc_curve(self, y_pred, y_test, eta_test, pt_test, pT_min, pT_max, eta_
         auc_val = auc(fpr, tpr)
         make_roc_plot(fpr, tpr, auc_val, pT_min, pT_max, eta_min, eta_max)
         print 'AUC = ', auc_val
+
+def get_weights(y_train, pt_train,options):
+
+    print 'getting weights...'
+    Nbins = 20
+
+    LV = rt.TH1D("LV", "LV", Nbins, options.train_pt_cut, 100.)
+    PU = rt.TH1D("PU", "PU", Nbins, options.train_pt_cut, 100.)
+    W  = rt.TH1D("W",  "W",  Nbins, options.train_pt_cut, 100.)
+
+    y_train  = y_train .values
+    pt_train = pt_train.values
+
+    for i0 in range(len(y_train)):
+        if y_train[i0] == 0:
+            LV.Fill(pt_train[i0])
+        else:  
+            PU.Fill(pt_train[i0])
+
+    LV.Scale(1./LV.GetEntries())
+    PU.Scale(1./PU.GetEntries())
+
+    #make pt-dependent weights
+    #pTweights = np.zeros(Nbins,dtype=float)
+    for i0 in range(LV.GetNbinsX()):
+        if (PU.GetBinContent(i0+1) == 0.) or (LV.GetBinContent(i0+1) == 0.): 
+            W.SetBinContent(i0+1, 1)
+        else: W.SetBinContent(i0+1, float(LV.GetBinContent(i0+1)) / float(PU.GetBinContent(i0+1)))
+
+    W.Print("all")
+    #put weights on training data
+    weights = np.zeros(len(y_train),dtype=float)
+    for i0 in range(len(y_train)):
+        if y_train[i0]    == 1: weights[i0] = W.GetBinContent(W.FindBin(pt_train[i0])) #weight PU
+        else: weights[i0] == 1.						     #not LV
+
+    return weights    
 
 class TMVA_Analysis():
     def __init__(self,options):
@@ -172,7 +211,7 @@ class DNN_Training():
         print 'Build dataset'
         lFile = h5py.File(options.infile+'.h5','r')
 
-        lArr = np.array(lFile.get('Events')[:10000000])
+        lArr = np.array(lFile.get('Events')[:1000000])
 
         df = pd.DataFrame(data=lArr)
         y  = df['PU']
@@ -183,17 +222,24 @@ class DNN_Training():
 
         num_vars = len(x.columns)
 
-        msk = np.random.rand(len(df)) < 0.8
-        
-        y_train, x_train  = y[msk], x[msk]
-        y_test, x_test    = y[~msk], x[~msk] 
+        msk  = np.random.rand(len(df)) < 0.8
+        msk2 = np.zeros(len(df),dtype=bool)
 
-        #propagate eta, pt for ROC curves
-        eta_test, pt_test = eta[~msk],pt[~msk]
+        for i0 in range(len(msk)):
+            if (msk[i0] == True) and (pt.iloc[i0] > options.train_pt_cut):
+                msk2[i0] = True
 
-	print 'Train on %i PF candidates and use %i for validation.'%(len(y_train),len(y_test))
+        #print msk2[0:1000]
+        y_train, x_train  = y[msk2], x[msk2]
+        y_test, x_test    = y[~msk2], x[~msk2] 
 
-        return x_train, x_test, y_train, y_test, num_vars, eta_test, pt_test
+        #propagate eta, pt for ROC curves, weights
+        eta_train,pt_train = eta[msk2],pt[msk2]
+        eta_test, pt_test  = eta[~msk2],pt[~msk2]
+
+	print 'Train on %i PF candidates (satisfying pT > %f) and use %i for validation.'%(len(y_train),options.train_pt_cut,len(y_test))
+
+        return x_train, x_test, y_train, y_test, num_vars, eta_test, pt_test, eta_train, pt_train
 
 
     def build_model(self,num_vars):
@@ -208,18 +254,18 @@ class DNN_Training():
         return model
 
     def train(self):
-        x_train, x_test, y_train, y_test, num_vars, eta_test, pt_test = self.get_data()
-
-
-        print x_train[:100]
-        print y_train[:100]
-
+        x_train, x_test, y_train, y_test, num_vars, eta_test, pt_test, eta_train, pt_train = self.get_data()
+       
+        Nbatch = 5000
+        Nepoch = 20
+        
         model = self.build_model(num_vars)
         model.summary()
 
         scaler  = StandardScaler().fit(x_train)
         x_train = scaler.transform(x_train)
 
+        
         callbacks = all_callbacks(stop_patience=1000, 
                             lr_factor=0.5,
                             lr_patience=10,
@@ -229,7 +275,12 @@ class DNN_Training():
                             outputDir='/afs/cern.ch/work/j/jekrupa/public/CMSSW_10_0_3/src/CaloTrigNN/CaloNtupler/test/puppi_training/h5_files')
 
         print 'Fit model...'
-        history = model.fit(x_train, y_train, epochs=5, batch_size=50000, callbacks=callbacks.callbacks, validation_split=0.0)
+        if options.use_weights:
+            weights = get_weights(y_train, pt_train, options)
+            history = model.fit(x_train, y_train, epochs=Nepoch, batch_size=Nbatch, callbacks=callbacks.callbacks, validation_split=0.0, sample_weight=weights)
+        else:
+            history = model.fit(x_train, y_train, epochs=Nepoch, batch_size=Nbatch, callbacks=callbacks.callbacks, validation_split=0.0)
+
 
         #https://hackernoon.com/simple-guide-on-how-to-generate-roc-plot-for-keras-classifier-2ecc6c73115a
         y_pred                = model.predict(x_test).ravel()
@@ -264,8 +315,8 @@ class DNN_Training():
 if __name__ == "__main__":
     options = parser()
     print options
-    #pftrain = DNN_Training(options)
-    #pftrain.train()
+    pftrain = DNN_Training(options)
+    pftrain.train()
 
-    tmva_ana = TMVA_Analysis(options)
-    tmva_ana.TMVA()
+    #tmva_ana = TMVA_Analysis(options)
+    #tmva_ana.TMVA()

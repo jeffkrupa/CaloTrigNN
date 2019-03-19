@@ -9,6 +9,7 @@ echo "arguments               = \$(ClusterId)\$(ProcId)" $PU $ID /afs/cern.ch/us
 echo "output                  = output/${PU}pu.\$(ClusterId).\$(ProcId).out" >> tmp.sub
 echo "error                   = error/${PU}pu.\$(ClusterId).\$(ProcId).err"  >> tmp.sub
 echo "log                     = log/${PU}pu.\$(ClusterId).\$(ProcId).log"                >> tmp.sub
+#echo "RequestCpus             = 4" >> tmp.sub
 echo "+JobFlavour = \"workday\"  " >> tmp.sub
 echo "queue " >> tmp.sub
 condor_submit tmp.sub
