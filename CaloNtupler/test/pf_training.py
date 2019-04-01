@@ -14,7 +14,7 @@ from rootpy.tree import Cut
 from keras import backend as K
 import tensorflow as tf
 
-from keras.optimizers import Adam, Nadam
+from keras.optimizers import Adam, Nadam, SGD
 from keras.models import Sequential, Model
 from keras.optimizers import SGD
 from keras.layers import Input, Activation, Dense, Convolution2D, MaxPooling2D, Dropout, Flatten
@@ -39,9 +39,9 @@ def parser():
     parser.add_option('--tag',     action='store', type='string', dest='tag',  		default='AK8v42017',      help='samples tag')
     parser.add_option('--inc',     action='store_true',           dest='inc',   	default=False,            help='make inclusive ROC')
     parser.add_option('--makeroc',     action='store_true',           dest='makeroc',   default=True,             help='make ROC')
-    parser.add_option('--infile',  action='store', type='string', dest='infile',default='/eos/user/j/jekrupa/pf_studies/40pu_era2018_skimmed', help='infile dir')
+    parser.add_option('--infile',  action='store', type='string', dest='infile',default='/eos/user/j/jekrupa/pf_studies/newMinBiaspu_gen0_dR2_Mar26.rootskimmed', help='infile dir')
     parser.add_option('--new',     action='store_true',           dest='new',   default=False,     		  help='if sig and bkg files are new')
-    parser.add_option('--inputvars',  action='store', type='string', dest='lVars',default='depthFrac0,depthFrac1,depthFrac2,depthFrac3,depthFrac4,depthFrac5,depthFrac6,phi,eta,ecalE', help='input variables')
+    parser.add_option('--inputvars',  action='store', type='string', dest='lVars',default=['depthFrac0','depthFrac1','depthFrac2','depthFrac3','depthFrac4','depthFrac5','depthFrac6','phi','eta'], help='input variables')
     parser.add_option('--train_pt_cut', dest="train_pt_cut", type=float,default=5.0, help='pT requirement on training sample')
     parser.add_option('--weights',     action='store_true',           dest='use_weights',           default=False,            help='weight PU and LV pT spectra')
 
@@ -75,18 +75,22 @@ def print_model_to_json(model, outfile_name):
         json.dump(obj, outfile, sort_keys=True,indent=4, separators=(',', ': '))
         outfile.write('\n')
 
-def make_roc_plot(fpr, tpr, auc, pT_min, pT_max, eta_min, eta_max):
+def make_roc_plot(fpr, tpr, auc, pT_min, pT_max, eta_min, eta_max,options):
         plt.figure()
         plt.plot([0, 1], [0, 1], 'k--')
         plt.plot(fpr, tpr, label='auc = {:.3f}'.format(auc))
         plt.xlabel('False positive rate')
         plt.ylabel('True positive rate')
-        plt.title('ROC curve: %.1f <= pT <= %.1f, %.1f <= eta <= %.1f'%(pT_min, pT_max, eta_min, eta_max))
+        if options.use_weights:
+          plt.title('%.1f <= pT <= %.1f, %.1f <= eta <= %.1f, Training pT > %.1f, PU weighted'%(pT_min, pT_max, eta_min, eta_max,options.train_pt_cut))
+        else:
+          plt.title('%.1f <= pT <= %.1f, %.1f <= eta <= %.1f, Training pT > %.1f'%(pT_min, pT_max, eta_min, eta_max,options.train_pt_cut))
+ 
         plt.legend(loc='best')
-        #plt.savefig("plots/roc_%.1f_pt_%.1f_%.1f_eta_%.1f.png"%(pT_min, pT_max, eta_min, eta_max))
+        plt.savefig("plots/roc_%.1f_pt_%.1f_%.1f_eta_%.1f.png"%(pT_min, pT_max, eta_min, eta_max))
         plt.savefig("plots/roc_%.1f_pt_%.1f_%.1f_eta_%.1f.pdf"%(pT_min, pT_max, eta_min, eta_max))
 
-def make_roc_curve(y_pred, y_test, eta_test, pt_test, pT_min, pT_max, eta_min, eta_max):
+def make_roc_curve(y_pred, y_test, eta_test, pt_test, pT_min, pT_max, eta_min, eta_max,options):
 
         print 'Make roc curve for kinematic region %.1f <= pT <= %.1f, %.1f <= eta <= %.1f'%(pT_min,pT_max,eta_min,eta_max)
 
@@ -109,13 +113,29 @@ def make_roc_curve(y_pred, y_test, eta_test, pt_test, pT_min, pT_max, eta_min, e
 
         fpr, tpr, thresholds = roc_curve(y_test_tmp, y_pred_tmp)
         auc_val = auc(fpr, tpr)
-        make_roc_plot(fpr, tpr, auc_val, pT_min, pT_max, eta_min, eta_max)
+        make_roc_plot(fpr, tpr, auc_val, pT_min, pT_max, eta_min, eta_max,options)
         print 'AUC = ', auc_val
+
+def plot_th1(lTH1):
+    print 'making TH1 plot'
+    c0 = rt.TCanvas("c0","c0",800,600)
+    l0 = rt.TLegend(0.7,0.75,0.9,0.9)
+    for i0, TH1 in enumerate(lTH1):
+      TH1.Draw("hist same")
+      TH1.SetLineColor(i0+1)
+      TH1.SetStats(0)
+      l0.AddEntry(TH1,TH1.GetName())
+      c0.Update()
+
+    l0.Draw()
+    c0.Draw()
+    c0.SaveAs("plots/training_pT_distribution.pdf")
+    del c0; 
 
 def get_weights(y_train, pt_train,options):
 
     print 'getting weights...'
-    Nbins = 20
+    Nbins = 100
 
     LV = rt.TH1D("LV", "LV", Nbins, options.train_pt_cut, 100.)
     PU = rt.TH1D("PU", "PU", Nbins, options.train_pt_cut, 100.)
@@ -124,72 +144,142 @@ def get_weights(y_train, pt_train,options):
     y_train  = y_train .values
     pt_train = pt_train.values
 
-    for i0 in range(len(y_train)):
-        if y_train[i0] == 0:
-            LV.Fill(pt_train[i0])
-        else:  
-            PU.Fill(pt_train[i0])
+    for y in y_train:
+        if y == 1:  LV.Fill(pt_train[i0])
+        else:       PU.Fill(pt_train[i0])
 
-    LV.Scale(1./LV.GetEntries())
-    PU.Scale(1./PU.GetEntries())
+    LV.Scale(1./LV.Integral())
+    PU.Scale(1./PU.Integral())
 
-    #make pt-dependent weights
-    #pTweights = np.zeros(Nbins,dtype=float)
+    plot_th1([LV,PU])
+
+    #make weight in each pT cat
     for i0 in range(LV.GetNbinsX()):
         if (PU.GetBinContent(i0+1) == 0.) or (LV.GetBinContent(i0+1) == 0.): 
             W.SetBinContent(i0+1, 1)
         else: W.SetBinContent(i0+1, float(LV.GetBinContent(i0+1)) / float(PU.GetBinContent(i0+1)))
 
-    W.Print("all")
-    #put weights on training data
-    weights = np.zeros(len(y_train),dtype=float)
-    for i0 in range(len(y_train)):
-        if y_train[i0]    == 1: weights[i0] = W.GetBinContent(W.FindBin(pt_train[i0])) #weight PU
-        else: weights[i0] == 1.						     #not LV
+        #make sure weight isn't too big or too small
+        weightUpper = 5.0
+        weightLower = 0.2
+        if  W.GetBinContent(i0+1) > weightUpper:  W.SetBinContent(i0+1) == weightUpper 
+        if  W.GetBinContent(i0+1) < weightLower:  W.SetBinContent(i0+1) == WeightLower
+        
 
-    return weights    
+    W.Print("all")
+    #apply weights on training PU samples
+    candWeights = np.zeros(len(y_train),dtype=float)
+    for y in y_train:
+        if y == 1: candWeights[i0] == 1.				       #don't weight LV
+        else:      candWeights[i0] = W.GetBinContent(W.FindBin(pt_train[i0]))  #weight PU
+
+    return candWeights    
 
 class TMVA_Analysis():
     def __init__(self,options):
         TMVA.Tools.Instance()
+        TMVA.PyMethodBase.PyInitialize()
         gROOT.LoadMacro( "./TMVAGui.C" )
         self._lOutput     = TFile.Open('TMVA.root', 'RECREATE')
         self._lFactory    = TMVA.Factory('TMVAClassification', self._lOutput,'!V:!Silent:Color:DrawProgressBar:AnalysisType=Classification')
         self._lDataLoader = TMVA.DataLoader("dataset")
 
-        for i0 in options.inputvars:
+        for i0 in options.lVars:
             self._lDataLoader.AddVariable(i0,'F')
 
         #define signal and background tree based on PU
         self._lInputFile  = TFile.Open(options.infile+'.root')
         self._lInputTree  = self._lInputFile.Get("Events")
-        self._lSigFile    = TFile.Open("sig.root","READ")
-        self._lBkgFile    = TFile.Open("bkg.root","READ")
 
         if options.new:
            self._lSigFile       = TFile.Open("sig.root","RECREATE")
            self._lBkgFile       = TFile.Open("bkg.root","RECREATE")
            self._lSigFile.cd()
-           self._lSigTree       = self._lInputTree.CopyTree("PU==0")
+           self._lSigTree       = self._lInputTree.CopyTree("LV==1")
+           self._lSigTree.Write()
+           self._lSigFile.Close() 
            self._lBkgFile.cd()
-           self._lBkgTree       = self._lInputTree.CopyTree("PU==1")
+           self._lBkgTree       = self._lInputTree.CopyTree("LV==0")
            self._lBkgTree.Write()
-           self._lSigFile.Close(); self._lBkgFile.Close();
-        else:
-           self._lInputFile  = TFile.Open(options.infile+'.root')
-           self._lInputTree  = self._lInputFile.Get("Events")
-           self._lSigFile    = TFile.Open("sig.root","READ")
-           self._lBkgFile    = TFile.Open("bkg.root","READ")
-           self._lSigTree    = self._lSigFile.Get("Events")
-           self._lBkgTree    = self._lBkgFile.Get("Events")
+           self._lBkgFile.Close()
+        
+        self._lSigFile    = TFile.Open("sig.root","READ")
+        self._lBkgFile    = TFile.Open("bkg.root","READ")
+        self._lSigTree    = self._lSigFile.Get("Events")
+        self._lBkgTree    = self._lBkgFile.Get("Events")
 
         self._lDataLoader.AddSignalTree    (self._lSigTree,1.0)
         self._lDataLoader.AddBackgroundTree(self._lBkgTree,1.0)
 
-        self._lDataLoader.PrepareTrainingAndTestTree(TCut(""),TCut(""),"SplitMode=Random:NormMode=NumEvents:!V") 
+        nSig = self._lSigTree.GetEntries()
+        nBkg = self._lBkgTree.GetEntries()
 
-        self._lFactory.BookMethod( self._lDataLoader, TMVA.Types.kLikelihood, "Likelihood","H:!V:TransformOutput:PDFInterpol=Spline2:NSmoothSig[0]=20:NSmoothBkg[0]=20:NSmoothBkg[1]=10:NSmooth=1:NAvEvtPerBin=50")
-        #self._lFactory.BookMethod( self._lDataLoader, TMVA.Types.kBDT, "BDTG", "!H:!V:NTrees=1000:BoostType=Grad:Shrinkage=0.10:UseBaggedBoost:BaggedSampleFraction=0.50:nCuts=20:MaxDepth=2")
+        nSigTrain = nSig*0.8
+        nBkgTrain = nSig*0.8
+
+        self._lDataLoader.PrepareTrainingAndTestTree(TCut(""),TCut(""),"nTrain_Signal=%i:nTrain_Background=%i:nTest_Signal=%i:nTest_Background=%i:SplitMode=Random:NormMode=NumEvents:!V"%(nSigTrain,nBkgTrain,nSigTrain,nBkgTrain)) 
+
+        Methods =  {
+        #'Variable': TMVA.Types.kVariable,
+        
+        #'Cuts': TMVA.Types.kCuts,
+        'Likelihood': TMVA.Types.kLikelihood,
+        #'BDT': TMVA.Types.kBDT
+        #'PyRandomForest': TMVA.Types.kPyRandomForest,
+        #'MaxMethod': TMVA.Types.kMaxMethod
+        }
+        '''
+        'PDERS': TMVA.Types.kPDERS,
+        'HMatrix': TMVA.Types.kHMatrix,
+        'Fisher': TMVA.Types.kFisher,
+        'KNN': TMVA.Types.kKNN,
+        'CFMlpANN': TMVA.Types.kCFMlpANN,
+        'TMlpANN': TMVA.Types.kTMlpANN,
+        'BDT': TMVA.Types.kBDT,
+        'DT': TMVA.Types.kDT,
+        'RuleFit': TMVA.Types.kRuleFit,
+        'SVM': TMVA.Types.kSVM,
+        'MLP': TMVA.Types.kMLP,
+        'BayesClassifier': TMVA.Types.kBayesClassifier,
+        #'FDA': TMVA.Types.kFDA,
+        'Boost': TMVA.Types.kBoost,
+        'PDEFoam': TMVA.Types.kPDEFoam,
+        'LD': TMVA.Types.kLD,
+        'Plugins': TMVA.Types.kPlugins,
+        #'Category': TMVA.Types.kCategory,
+        'DNN': TMVA.Types.kDNN,
+        'PyRandomForest': TMVA.Types.kPyRandomForest,
+        'PyAdaBoost': TMVA.Types.kPyAdaBoost,
+        'PyGTB': TMVA.Types.kPyGTB,
+        'PyKeras': TMVA.Types.kPyKeras,
+        'C50': TMVA.Types.kC50,
+        'RSNNS': TMVA.Types.kRSNNS,
+        'RSVM': TMVA.Types.kRSVM,
+        'RXGB': TMVA.Types.kRXGB,
+        'MaxMethod': TMVA.Types.kMaxMethod
+        '''
+
+        for m,t in Methods.iteritems():
+           self._lFactory.BookMethod( self._lDataLoader, t, m, "" )
+        #self._lFactory.BookMethod(self._lDataLoader, TMVA.Types.kBDT, 'BDT', '!H:!V:NTrees=300:MinNodeSize=2.5%:MaxDepth=4:BoostType=Grad:SeparationType=GiniIndex:nCuts=100:PruneMethod=NoPruning')
+        #self._lFactory.BookMethod(self._lDataLoader, TMVA.Types.kBDT, 'BDT2', '!H:!V:NTrees=300:MinNodeSize=2.5%:MaxDepth=4:BoostType=Grad:SeparationType=CrossEntropy:nCuts=100:PruneMethod=NoPruning')
+
+        model = Sequential()
+        model.add(Dense(len(options.lVars), input_dim=len(options.lVars),activation='tanh'))
+        #model.add(Dense(30,  activation='tanh'))
+        #model.add(Dense(20,  activation='relu'))
+        #model.add(Dense(10,  activation='tanh'))
+        model.add(Dense(5,  activation='relu'))
+        model.add(Dense(2,  activation='sigmoid'))
+ 
+        model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy',])
+        model.save('model.h5')
+        model.summary()
+
+        #self._lFactory.BookMethod(self._lDataLoader, TMVA.Types.kFisher, 'Fisher', '!H:!V:Fisher')
+        #self._lFactory.BookMethod(self._lDataLoader, TMVA.Types.kPyKeras, 'PyKeras', 'H:!V:FilenameModel=model.h5:NumEpochs=20:BatchSize=500')
+ 
+
         self._lFactory.Print("v")
 
     def TMVA(self):
@@ -199,23 +289,23 @@ class TMVA_Analysis():
         self._lOutput.Close()
 
         print "TMVA classification is done, open GUI"
-        TMVA.TMVAGui("TMVA.root") 
-        gApplication.Run()      
+        #TMVA.TMVAGui("TMVA.root") 
+        #gApplication.Run()      
 
 class DNN_Training():
     def __init__(self,options):
-        pass
+        rt.gROOT.SetBatch(rt.kTRUE)
 
     def get_data(self):
  
         print 'Build dataset'
         lFile = h5py.File(options.infile+'.h5','r')
 
-        lArr = np.array(lFile.get('Events')[:1000000])
+        lArr = np.array(lFile.get('Events')[:])
 
         df = pd.DataFrame(data=lArr)
-        y  = df['PU']
-        x  = df.drop(columns=['genE','PU','energy','pt'])
+        y  = df['LV']
+        x  = df.drop(columns=['genE','LV','energy','pt'])
 
         eta = df['eta']
         pt  = df['pt']
@@ -228,10 +318,11 @@ class DNN_Training():
         for i0 in range(len(msk)):
             if (msk[i0] == True) and (pt.iloc[i0] > options.train_pt_cut):
                 msk2[i0] = True
-
+      
         #print msk2[0:1000]
         y_train, x_train  = y[msk2], x[msk2]
         y_test, x_test    = y[~msk2], x[~msk2] 
+        print x_test
 
         #propagate eta, pt for ROC curves, weights
         eta_train,pt_train = eta[msk2],pt[msk2]
@@ -255,9 +346,9 @@ class DNN_Training():
 
     def train(self):
         x_train, x_test, y_train, y_test, num_vars, eta_test, pt_test, eta_train, pt_train = self.get_data()
-       
+
         Nbatch = 5000
-        Nepoch = 20
+        Nepoch = 10
         
         model = self.build_model(num_vars)
         model.summary()
@@ -293,14 +384,14 @@ class DNN_Training():
           lpT  = [1.,10000.0]
           leta = [1.7,3.0]
         else:
-          lpT  = [1.,10.,20.,10000.0]
+          lpT  = [1.,5.,10.,20.,10000.0]
           leta = [1.7,2.0,2.5,3.0]
 
 
         if options.makeroc:
           for i0 in range(len(lpT)-1):
             for i1 in range(len(leta)-1):
-              make_roc_curve(y_pred,y_test,eta_test, pt_test, lpT[i0],lpT[i0+1],leta[i1],leta[i1+1])
+              make_roc_curve(y_pred,y_test,eta_test, pt_test, lpT[i0],lpT[i0+1],leta[i1],leta[i1+1],options)
 
 
         frozen_graph = freeze_session(K.get_session(),
@@ -315,8 +406,8 @@ class DNN_Training():
 if __name__ == "__main__":
     options = parser()
     print options
-    pftrain = DNN_Training(options)
-    pftrain.train()
+    #pftrain = DNN_Training(options)
+    #pftrain.train()
 
-    #tmva_ana = TMVA_Analysis(options)
-    #tmva_ana.TMVA()
+    tmva_ana = TMVA_Analysis(options)
+    tmva_ana.TMVA()
