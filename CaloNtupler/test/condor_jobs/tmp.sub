@@ -1,7 +1,12 @@
+universe                =vanilla
 executable              = submit_3.sh
-arguments               = $(ClusterId)$(ProcId) 0 900 /afs/cern.ch/user/j/jekrupa/private/x509up
-output                  = output/0pu.$(ClusterId).$(ProcId).out
-error                   = error/0pu.$(ClusterId).$(ProcId).err
-log                     = log/0pu.$(ClusterId).$(ProcId).log
-+JobFlavour = "workday"  
-queue 
+Should_Transfer_Files   = YES
+WhenToTransferOutput    = ON_EXIT_OR_EVICT
+Transfer_Input_Files    = submit_3.sh, /uscms_data/d3/jkrupa/pf_studies/CMSSW_10_5_0_pre2.tgz
+arguments               = $(ClusterId)$(ProcId) 40 73 /uscms_data/d3/jkrupa/pf_studies/x509up
+output                  = output/40pu.$(ClusterId).$(ProcId).out
+error                   = error/40pu.$(ClusterId).$(ProcId).err
+log                     = log/40pu.$(ClusterId).$(ProcId).log
+request_memory          = 4000
++JobFlavour = "tomorrow"  
+queue 100

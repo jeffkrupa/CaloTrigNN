@@ -44,7 +44,7 @@ process.hbheprerecoM3.algorithm.__setattr__('useM3',cms.bool(True))
 
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10)
+    input = cms.untracked.int32(50)
 )
 
 # Input source

@@ -5,11 +5,11 @@
         {
             "class_name": "Dense",
             "config": {
-                "activation": "relu",
+                "activation": "tanh",
                 "activity_regularizer": null,
                 "batch_input_shape": [
                     null,
-                    10
+                    9
                 ],
                 "bias_constraint": null,
                 "bias_initializer": {
@@ -31,14 +31,14 @@
                 "kernel_regularizer": null,
                 "name": "dense_1",
                 "trainable": true,
-                "units": 10,
+                "units": 9,
                 "use_bias": true
             }
         },
         {
             "class_name": "Dense",
             "config": {
-                "activation": "relu",
+                "activation": "tanh",
                 "activity_regularizer": null,
                 "bias_constraint": null,
                 "bias_initializer": {
@@ -66,7 +66,7 @@
         {
             "class_name": "Dense",
             "config": {
-                "activation": "relu",
+                "activation": "tanh",
                 "activity_regularizer": null,
                 "bias_constraint": null,
                 "bias_initializer": {
@@ -94,7 +94,7 @@
         {
             "class_name": "Dense",
             "config": {
-                "activation": "relu",
+                "activation": "tanh",
                 "activity_regularizer": null,
                 "bias_constraint": null,
                 "bias_initializer": {
@@ -122,7 +122,7 @@
         {
             "class_name": "Dense",
             "config": {
-                "activation": "sigmoid",
+                "activation": "tanh",
                 "activity_regularizer": null,
                 "bias_constraint": null,
                 "bias_initializer": {
@@ -143,10 +143,38 @@
                 "kernel_regularizer": null,
                 "name": "dense_5",
                 "trainable": true,
+                "units": 5,
+                "use_bias": true
+            }
+        },
+        {
+            "class_name": "Dense",
+            "config": {
+                "activation": "sigmoid",
+                "activity_regularizer": null,
+                "bias_constraint": null,
+                "bias_initializer": {
+                    "class_name": "Zeros",
+                    "config": {}
+                },
+                "bias_regularizer": null,
+                "kernel_constraint": null,
+                "kernel_initializer": {
+                    "class_name": "VarianceScaling",
+                    "config": {
+                        "distribution": "uniform",
+                        "mode": "fan_avg",
+                        "scale": 1.0,
+                        "seed": null
+                    }
+                },
+                "kernel_regularizer": null,
+                "name": "dense_6",
+                "trainable": true,
                 "units": 1,
                 "use_bias": true
             }
         }
     ],
-    "keras_version": "2.1.2"
+    "keras_version": "2.1.4"
 }

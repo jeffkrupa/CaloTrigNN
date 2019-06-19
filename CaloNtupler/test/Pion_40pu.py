@@ -69,10 +69,10 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2018_realistic', '
 process.generator = cms.EDProducer("FlatRandomEGunProducer",
     PGunParameters = cms.PSet(
         PartID = cms.vint32(211),
-        MaxEta = cms.double(3.0),
+        MaxEta = cms.double(-1.7),
         MaxPhi = cms.double(3.14159265359),
-        MinEta = cms.double(1.7),
-        MinE = cms.double(0.99),
+        MinEta = cms.double(-3.0),
+        MinE = cms.double(4.0),
         MinPhi = cms.double(-3.14159265359), ## in radians
 
         MaxE = cms.double(200.01)
@@ -102,8 +102,8 @@ associatePatAlgosToolsTask(process)
 for path in process.paths:
 	getattr(process,path)._seq = process.ProductionFilterSequence * getattr(process,path)._seq 
 
-process.options.numberOfThreads=cms.untracked.uint32(8)
-process.options.numberOfStreams=cms.untracked.uint32(0)
+#process.options.numberOfThreads=cms.untracked.uint32(8)
+#process.options.numberOfStreams=cms.untracked.uint32(0)
 
 
 # Customisation from command line

@@ -106,7 +106,7 @@ void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
     //std::cout << "PF Candidate: " << pId << std::endl;
     pId++;
     // construct object and place in array
-    float genE = depthGenSum(&(*itPF),iSimHits,iRecNumber);
+    //float genE = depthGenSum(&(*itPF),iSimHits,iRecNumber);
     
     if (std::abs(itPF->eta()) > 3. || std::abs(itPF->eta()) < 1.7) continue;
     //if (genE / itPF->energy() < 0.1) continue;
@@ -130,6 +130,8 @@ void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
     pPF->ecalE     = itPF->ecalEnergy();
     pPF->hcalE     = itPF->hcalEnergy();
     //pPF->avgdepth  = depth(&(*itPF),pPF,iSimHits,iRecNumber);
+    float genE = 0.;
+    genE           = depth(&(*itPF),pPF,iSimHits,iRecNumber);
 
     for(unsigned int i0 = 0; i0 < itPF->hcalDepthEnergyFractions().size(); i0++) 
 	pPF->depthFrac[i0] = itPF->hcalDepthEnergyFractions()[i0];
@@ -148,12 +150,13 @@ void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
     }
     pPF->genMatch = match;
     //if (match == 1) std::cout << "Gen match: " << match << std::endl;
-    if (itPF == PFCol->end() - 1){ pPF->NGenMatch = nGenMatch; } 
+    //if (itPF == PFCol->end() - 1){ pPF->NGenMatch = nGenMatch; } 
   } 
 }
 float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber) { 
     float lTotRho  = 0; 
     float lTotE    = 0;
+    float genSum   = 0;
     //Get Calo Depth of PF Clusters
     float lRhoE    = iPF->positionAtECALEntrance().rho();
     assert(!iPF->elementsInBlocks().empty() );
@@ -230,6 +233,8 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
 	  }
 	}
 	double sum = std::accumulate(energyPerDepth.begin(), energyPerDepth.end(), 0.);
+        genSum     = std::accumulate(genenergyPerDepth.begin(), genenergyPerDepth.end(), 0.);
+
 	//std::cout << "sum: " << sum << std::endl;
 	/*if (sum > 0) {
 	  for (unsigned int i = 0; i < energyPerDepth.size(); ++i) {
@@ -249,7 +254,8 @@ float FillerPF::depth(const reco::PFCandidate *iPF,baconhep::TPFPart *iPFPart,co
       //std::cout << "===> " << totGenE << " -- " << totRecHitE << " -- " << iPF->hcalEnergy() << " -- " << iPF->eta() << std::endl;
     }
     if(lTotE == 0) return 0;
-    return lTotRho/lTotE;
+    //return lTotRho/lTotE;
+    return genSum;
     //std::cout << iPFPart->depthE[0] << " - " << iPFPart->depthE[1] << " -- " << iPFPart->depthE[2] << " -- " << iPFPart->depthE[3] << " -- " << iPFPart->depthE[4] << " -- " << iPFPart->depthE[5] << " -- " << iPFPart->depthE[6] << std::endl; 
 }
 

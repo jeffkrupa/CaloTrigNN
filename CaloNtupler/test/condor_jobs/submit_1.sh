@@ -1,9 +1,9 @@
 #!/bin/bash
 
-PU=$1
-START=$2
-END=$3
+rm log/*
+rm output/*
+rm error/*
 
-for x in `seq $2 $3`; do 
-	bash submit_2.sh submit_3.sh $PU $x
-done 
+source tar.sh
+NN=$1
+bash submit_2.sh submit_3.sh $PU $x

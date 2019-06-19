@@ -39,10 +39,10 @@ def parser():
     parser.add_option('--tag',     action='store', type='string', dest='tag',  		default='AK8v42017',      help='samples tag')
     parser.add_option('--inc',     action='store_true',           dest='inc',   	default=False,            help='make inclusive ROC')
     parser.add_option('--makeroc',     action='store_true',           dest='makeroc',   default=True,             help='make ROC')
-    parser.add_option('--infile',  action='store', type='string', dest='infile',default='/eos/user/j/jekrupa/pf_studies/newMinBiaspu_gen0_dR2_Mar26.rootskimmed', help='infile dir')
+    parser.add_option('--infile',  action='store', type='string', dest='infile',default='/eos/uscms/store/user/jkrupa/pf_studies/newMinBiaspu_gen0_dR2/oldfn/Apr2.rootskimmed', help='infile dir')
     parser.add_option('--new',     action='store_true',           dest='new',   default=False,     		  help='if sig and bkg files are new')
-    parser.add_option('--inputvars',  action='store', type='string', dest='lVars',default=['depthFrac0','depthFrac1','depthFrac2','depthFrac3','depthFrac4','depthFrac5','depthFrac6','phi','eta'], help='input variables')
-    parser.add_option('--train_pt_cut', dest="train_pt_cut", type=float,default=5.0, help='pT requirement on training sample')
+    parser.add_option('--inputvars',  action='store', type='string', dest='lVars',default=['eta','phi','depthFrac0','depthFrac1','depthFrac2','depthFrac3','depthFrac4','depthFrac5','depthFrac6'], help='input variables')
+    parser.add_option('--train_pt_cut', dest="train_pt_cut", type=float,default=1.0, help='pT requirement on training sample')
     parser.add_option('--weights',     action='store_true',           dest='use_weights',           default=False,            help='weight PU and LV pT spectra')
 
     (options,args) = parser.parse_args()
@@ -87,7 +87,7 @@ def make_roc_plot(fpr, tpr, auc, pT_min, pT_max, eta_min, eta_max,options):
           plt.title('%.1f <= pT <= %.1f, %.1f <= eta <= %.1f, Training pT > %.1f'%(pT_min, pT_max, eta_min, eta_max,options.train_pt_cut))
  
         plt.legend(loc='best')
-        plt.savefig("plots/roc_%.1f_pt_%.1f_%.1f_eta_%.1f.png"%(pT_min, pT_max, eta_min, eta_max))
+        #plt.savefig("plots/roc_%.1f_pt_%.1f_%.1f_eta_%.1f.png"%(pT_min, pT_max, eta_min, eta_max))
         plt.savefig("plots/roc_%.1f_pt_%.1f_%.1f_eta_%.1f.pdf"%(pT_min, pT_max, eta_min, eta_max))
 
 def make_roc_curve(y_pred, y_test, eta_test, pt_test, pT_min, pT_max, eta_min, eta_max,options):
@@ -187,19 +187,19 @@ class TMVA_Analysis():
         for i0 in options.lVars:
             self._lDataLoader.AddVariable(i0,'F')
 
-        #define signal and background tree based on PU
-        self._lInputFile  = TFile.Open(options.infile+'.root')
-        self._lInputTree  = self._lInputFile.Get("Events")
-
+        self._lDataLoader.Print("all")
+        #define signal and background tree based on LV flag
         if options.new:
+           self._lInputFile  = TFile.Open(options.infile+'.root')
+           self._lInputTree  = self._lInputFile.Get("Events")
            self._lSigFile       = TFile.Open("sig.root","RECREATE")
            self._lBkgFile       = TFile.Open("bkg.root","RECREATE")
            self._lSigFile.cd()
-           self._lSigTree       = self._lInputTree.CopyTree("LV==1")
+           self._lSigTree       = self._lInputTree.CopyTree("LV==1 && std::abs(eta) < 2.8 && std::abs(eta) > 2.4 && pt > 5")
            self._lSigTree.Write()
            self._lSigFile.Close() 
            self._lBkgFile.cd()
-           self._lBkgTree       = self._lInputTree.CopyTree("LV==0")
+           self._lBkgTree       = self._lInputTree.CopyTree("LV==0 && std::abs(eta) < 2.8 && std::abs(eta) > 2.4 && pt > 5")
            self._lBkgTree.Write()
            self._lBkgFile.Close()
         
@@ -241,12 +241,12 @@ class TMVA_Analysis():
         'SVM': TMVA.Types.kSVM,
         'MLP': TMVA.Types.kMLP,
         'BayesClassifier': TMVA.Types.kBayesClassifier,
-        #'FDA': TMVA.Types.kFDA,
+        'FDA': TMVA.Types.kFDA,
         'Boost': TMVA.Types.kBoost,
         'PDEFoam': TMVA.Types.kPDEFoam,
         'LD': TMVA.Types.kLD,
         'Plugins': TMVA.Types.kPlugins,
-        #'Category': TMVA.Types.kCategory,
+        'Category': TMVA.Types.kCategory,
         'DNN': TMVA.Types.kDNN,
         'PyRandomForest': TMVA.Types.kPyRandomForest,
         'PyAdaBoost': TMVA.Types.kPyAdaBoost,
@@ -261,23 +261,30 @@ class TMVA_Analysis():
 
         for m,t in Methods.iteritems():
            self._lFactory.BookMethod( self._lDataLoader, t, m, "" )
-        #self._lFactory.BookMethod(self._lDataLoader, TMVA.Types.kBDT, 'BDT', '!H:!V:NTrees=300:MinNodeSize=2.5%:MaxDepth=4:BoostType=Grad:SeparationType=GiniIndex:nCuts=100:PruneMethod=NoPruning')
-        #self._lFactory.BookMethod(self._lDataLoader, TMVA.Types.kBDT, 'BDT2', '!H:!V:NTrees=300:MinNodeSize=2.5%:MaxDepth=4:BoostType=Grad:SeparationType=CrossEntropy:nCuts=100:PruneMethod=NoPruning')
+
+        self._lFactory.BookMethod(self._lDataLoader, TMVA.Types.kBDT, 'BDT', '!H:!V:NTrees=300:MinNodeSize=2.5%:MaxDepth=3:BoostType=Grad:SeparationType=GiniIndex:nCuts=100:UseBaggedBoost=True:PruneMethod=NoPruning')
+        #self._lfactory.bookmethod(self._ldataloader, tmva.types.kbdt, 'BDT2', '!h:!v:ntrees=300:minnodesize=2.5%:maxdepth=4:boosttype=AdaBoost:separationtype=crossentropy:ncuts=100:prunemethod=nopruning')
+
+        #self._lfactory.bookmethod(self._ldataloader, tmva.types.kbdt, 'BDT3', '!h:!v:ntrees=300:minnodesize=2.5%:maxdepth=4:boosttype=AdaBoost:separationtype=GiniIndex:ncuts=100:prunemethod=nopruning')
+        #self._lFactory.BookMethod( self._lDataLoader, TMVA.Types.kMLP, "MLP", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:!UseRegulator" )
 
         model = Sequential()
         model.add(Dense(len(options.lVars), input_dim=len(options.lVars),activation='tanh'))
-        #model.add(Dense(30,  activation='tanh'))
-        #model.add(Dense(20,  activation='relu'))
-        #model.add(Dense(10,  activation='tanh'))
-        model.add(Dense(5,  activation='relu'))
-        model.add(Dense(2,  activation='sigmoid'))
+        model.add(Dense(30,  activation='tanh'))
+        model.add(Dense(20,  activation='relu'))
+        model.add(Dense(10,  activation='tanh'))
+        model.add(Dense(5,   activation='relu'))
+        model.add(Dense(2,   activation='sigmoid'))
  
         model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy',])
         model.save('model.h5')
         model.summary()
 
-        #self._lFactory.BookMethod(self._lDataLoader, TMVA.Types.kFisher, 'Fisher', '!H:!V:Fisher')
-        #self._lFactory.BookMethod(self._lDataLoader, TMVA.Types.kPyKeras, 'PyKeras', 'H:!V:FilenameModel=model.h5:NumEpochs=20:BatchSize=500')
+        self._lFactory.BookMethod(self._lDataLoader, TMVA.Types.kPyKeras, 'PyKeras', 'H:!V:FilenameModel=model.h5:NumEpochs=40:BatchSize=100')
+
+        frozen_graph = freeze_session(K.get_session(),
+                              output_names=[out.op.name for out in model.outputs])
+        tf.train.write_graph(frozen_graph, "h5_files", "tf_model.pb", as_text=False)
  
 
         self._lFactory.Print("v")
@@ -288,9 +295,6 @@ class TMVA_Analysis():
         self._lFactory.EvaluateAllMethods()
         self._lOutput.Close()
 
-        print "TMVA classification is done, open GUI"
-        #TMVA.TMVAGui("TMVA.root") 
-        #gApplication.Run()      
 
 class DNN_Training():
     def __init__(self,options):
@@ -305,7 +309,7 @@ class DNN_Training():
 
         df = pd.DataFrame(data=lArr)
         y  = df['LV']
-        x  = df.drop(columns=['genE','LV','energy','pt'])
+        x  = df.drop(columns=['ecalE','genE','LV','energy','pt'])
 
         eta = df['eta']
         pt  = df['pt']
@@ -336,10 +340,11 @@ class DNN_Training():
     def build_model(self,num_vars):
         print 'Defining model...'
         model = Sequential()
-        model.add(Dense(num_vars, input_dim=num_vars,activation='relu'))
-        model.add(Dense(30, activation='relu'))
-        model.add(Dense(20,  activation='relu'))
-        model.add(Dense(10,  activation='relu'))
+        model.add(Dense(num_vars, input_dim=num_vars,activation='tanh'))
+        model.add(Dense(30, activation='tanh'))
+        model.add(Dense(20,  activation='tanh'))
+        model.add(Dense(10,  activation='tanh'))
+        model.add(Dense(5,  activation='tanh'))
         model.add(Dense(1,  activation='sigmoid'))
         model.compile(optimizer='adam',loss='binary_crossentropy',metrics=['accuracy'])
         return model
@@ -347,7 +352,7 @@ class DNN_Training():
     def train(self):
         x_train, x_test, y_train, y_test, num_vars, eta_test, pt_test, eta_train, pt_train = self.get_data()
 
-        Nbatch = 5000
+        Nbatch = 500
         Nepoch = 10
         
         model = self.build_model(num_vars)
@@ -363,7 +368,7 @@ class DNN_Training():
                             lr_epsilon=0.000001, 
                             lr_cooldown=2, 
                             lr_minimum=0.0000001,
-                            outputDir='/afs/cern.ch/work/j/jekrupa/public/CMSSW_10_0_3/src/CaloTrigNN/CaloNtupler/test/puppi_training/h5_files')
+                            outputDir='/uscms_data/d3/jkrupa/pf_studies/CMSSW_10_5_0_pre2/src/CaloTrigNN/CaloNtupler/test/h5_files')
 
         print 'Fit model...'
         if options.use_weights:
@@ -399,8 +404,8 @@ class DNN_Training():
         tf.train.write_graph(frozen_graph, "h5_files", "tf_model.pb", as_text=False)
 
 
-        print_model_to_json(model,'/afs/cern.ch/work/j/jekrupa/public/pf_studies/fixgit_4/CMSSW_10_0_3/src/CaloTrigNN/CaloNtupler/test/h5_files/model.json')
-        model.save_weights('/afs/cern.ch/work/j/jekrupa/public/pf_studies/fixgit_4/CMSSW_10_0_3/src/CaloTrigNN/CaloNtupler/test/h5_files/dense_model_weights.h5')
+        print_model_to_json(model,'/uscms_data/d3/jkrupa/pf_studies/CMSSW_10_5_0_pre2/src/CaloTrigNN/CaloNtupler/test/h5_files/model.json')
+        model.save_weights('/uscms_data/d3/jkrupa/pf_studies/CMSSW_10_5_0_pre2/src/CaloTrigNN/CaloNtupler/test/h5_files/dense_model_weights.h5')
         json_string = model.to_json()
 
 if __name__ == "__main__":

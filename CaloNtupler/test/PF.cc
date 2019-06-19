@@ -15,7 +15,7 @@ void loop(std::string lName){
     TFile *lFile = new TFile(lName.c_str(), "READ");
     TTree *lTree = (TTree*) lFile->Get("Events");
  
-    std::string fOut = "/eos/user/j/jekrupa/pf_studies/40pu_era2018_skimmed.root";
+    std::string fOut = lName + "skimmed.root";
     TFile *lFile1 = TFile::Open(fOut.c_str(),"RECREATE");
     TTree *lOut  = new TTree("Events","Events");
 
@@ -23,7 +23,7 @@ void loop(std::string lName){
     lTree->SetBranchAddress("PFDepth", &fPFDepths);
 
     lOut->Branch("genE"         , &fGenE         , "genE/f");
-    lOut->Branch("PU"           , &fPU           , "PU/i");
+    lOut->Branch("LV"           , &fLV           , "LV/i");
     lOut->Branch("pt"		, &fPt		 , "pt/f");
     lOut->Branch("energy"	, &fEnergy	 , "energy/f");
     lOut->Branch("ecalE"        , &fEcalE        , "ecalE/f");
@@ -54,9 +54,7 @@ void loop(std::string lName){
              tmpgenE  += PF->depthgenE[i];
 	   }
 
-	   if (fGenE > 1)  fPU = 0; 
- 	   else  fPU = 1; 
-
+	   fLV             = PF->genMatch;
 	   fGenE           = tmpgenE;
 	   fdepthFrac0     = PF->depthFrac[0];
            fdepthFrac1     = PF->depthFrac[1];
@@ -87,5 +85,8 @@ void loop(std::string lName){
 void PF(){
 
   //loop("/eos/user/j/jekrupa/pf_studies/0pu_era2018/Output_0pu_154_7036.root");
-   loop("/eos/user/j/jekrupa/pf_studies/40pu_era2018/output.root");
+   //loop("/eos/user/j/jekrupa/pf_studies/40pu_era2018/output.root");
+   //loop("/eos/user/j/jekrupa/pf_studies/newMinBiaspu_gen0_dR2_Mar26.root");
+   //loop("/eos/uscms/store/user/jkrupa/pf_studies/newMinBiaspu_gen0_dR2/oldfn/Output.root");
+   loop("/eos/uscms/store/user/jkrupa/pf_studies/newMinBiaspu_gen0_dR2/oldfn/Apr2.root");
 }
