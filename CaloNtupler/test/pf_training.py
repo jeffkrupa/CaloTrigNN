@@ -195,11 +195,11 @@ class TMVA_Analysis():
            self._lSigFile       = TFile.Open("sig.root","RECREATE")
            self._lBkgFile       = TFile.Open("bkg.root","RECREATE")
            self._lSigFile.cd()
-           self._lSigTree       = self._lInputTree.CopyTree("LV==1 && std::abs(eta) < 2.8 && std::abs(eta) > 2.4 && pt > 5")
+           self._lSigTree       = self._lInputTree.CopyTree("LV==1 && std::abs(eta) < 3.0 && std::abs(eta) > 2.5 && pt > 5")
            self._lSigTree.Write()
            self._lSigFile.Close() 
            self._lBkgFile.cd()
-           self._lBkgTree       = self._lInputTree.CopyTree("LV==0 && std::abs(eta) < 2.8 && std::abs(eta) > 2.4 && pt > 5")
+           self._lBkgTree       = self._lInputTree.CopyTree("LV==0 && std::abs(eta) < 3.0 && std::abs(eta) > 2.5 && pt > 5")
            self._lBkgTree.Write()
            self._lBkgFile.Close()
         
