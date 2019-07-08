@@ -100,18 +100,28 @@ void loop(std::string lName){
 
 	   if (pt < 0.2*GP->pt) continue;
            //if ( fabs( (pt - GP->pt)/ GP->pt) > 0.4 ) continue;   
+          
 	   float sumE = depth0 + depth1 + depth2 + depth3 + depth4 + depth5 + depth6;
 
 	   fPt = pt; fEta = GP->eta; fPhi = GP->phi; 
-   
-	   fdepthFrac0 = depth0 / sumE; 
-	   fdepthFrac1 = depth1 / sumE; 
-	   fdepthFrac2 = depth2 / sumE; 
-	   fdepthFrac3 = depth3 / sumE; 
-	   fdepthFrac4 = depth4 / sumE; 
-	   fdepthFrac5 = depth5 / sumE; 
-	   fdepthFrac6 = depth6 / sumE; 
-
+           if (sumE != 0){ 
+	     fdepthFrac0 = depth0 / sumE; 
+	     fdepthFrac1 = depth1 / sumE; 
+	     fdepthFrac2 = depth2 / sumE; 
+	     fdepthFrac3 = depth3 / sumE; 
+	     fdepthFrac4 = depth4 / sumE; 
+	     fdepthFrac5 = depth5 / sumE; 
+	     fdepthFrac6 = depth6 / sumE; 
+	   }
+	   else{ 
+             fdepthFrac0 = 0.;	
+             fdepthFrac1 = 0.;	
+             fdepthFrac2 = 0.;	
+             fdepthFrac3 = 0.;	
+             fdepthFrac4 = 0.;	
+             fdepthFrac5 = 0.;	
+             fdepthFrac6 = 0.;	
+	   }
  	   fLV = 1;
 
            lOut->Fill();
@@ -163,6 +173,7 @@ void PF(){
    //loop("/eos/user/j/jekrupa/pf_studies/newMinBiaspu_gen0_dR2_Mar26.root");
    //loop("/eos/uscms/store/user/jkrupa/pf_studies/newMinBiaspu_gen0_dR2/oldfn/Output.root");
    //loop("/eos/uscms/store/user/jkrupa/pf_studies/newMinBiaspu_gen0_dR2/oldfn/Apr2.root");
-   loop("/eos/uscms/store/user/jkrupa/pf_studies/pion_40pu_minbias_genpart/Output_40pu_1_30965.root");
+   //loop("/eos/uscms/store/user/jkrupa/pf_studies/pion_40pu_minbias_genpart/Output_40pu_1_30965.root");
+   loop("/eos/uscms/store/user/jkrupa/pf_studies/pion_40pu_minbias_genpart.root");
    //loop("Output_old.root");
 }
