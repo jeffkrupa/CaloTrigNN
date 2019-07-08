@@ -133,8 +133,9 @@ void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
     float genE = 0.;
     genE           = depth(&(*itPF),pPF,iSimHits,iRecNumber);
 
-    for(unsigned int i0 = 0; i0 < itPF->hcalDepthEnergyFractions().size(); i0++) 
+    for(unsigned int i0 = 0; i0 < itPF->hcalDepthEnergyFractions().size(); i0++) {
 	pPF->depthFrac[i0] = itPF->hcalDepthEnergyFractions()[i0];
+        pPF->depthE[i0]    = itPF->hcalDepthEnergyFractions()[i0]*itPF->hcalEnergy();}
     //std::cout << "\n" << "CANDIDATE: pftype/pt/eta/phi/hcalE/rawhcalE: " << itPF->particleId() << "/" << itPF->pt() << "/" << itPF->eta() << "/" << itPF->phi() << "/" << itPF->hcalEnergy() << "/" << itPF->rawHcalEnergy() << "\t\t-- depthFrac0..6: " << itPF->hcalDepthEnergyFractions()[0] << " -- " <<itPF->hcalDepthEnergyFractions()[1] << " -- " << itPF->hcalDepthEnergyFractions()[2] << " -- " << itPF->hcalDepthEnergyFractions()[3] << " -- " << itPF->hcalDepthEnergyFractions()[4] << " -- " << itPF->hcalDepthEnergyFractions()[5] << " -- " << itPF->hcalDepthEnergyFractions()[6] << "\n" << std::endl;
 
     float dRmin  = 999.;

@@ -5,6 +5,7 @@
 <use   name="DataFormats/L1GlobalTrigger"/>
 <use   name="DataFormats/HcalRecHit"/>
 <use   name="DataFormats/ParticleFlowCandidate"/>
+<use   name="DataFormats/HepMCCandidate"/>
 <use   name="SimCalorimetry/HcalSimAlgos"/>
 <use   name="SimCalorimetry/CaloSimAlgos"/>
 <use   name="Geometry/CaloGeometry"/>

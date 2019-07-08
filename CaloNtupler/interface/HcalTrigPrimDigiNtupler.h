@@ -10,6 +10,7 @@
 #include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
 #include "DataFormats/FEDRawData/interface/FEDRawDataCollection.h"
 //#include "CaloTrigNN/CaloNtupler/interface/HcalNtuple.h"
+#include "CaloTrigNN/CaloNtupler/interface/FillerGenInfo.hh"
 #include "CaloTrigNN/CaloNtupler/interface/FillerRH.hh"
 #include "CaloTrigNN/CaloNtupler/interface/FillerPF.hh"
 #include "CaloTrigNN/DataFormats/interface/THcalDep.hh"
@@ -29,7 +30,7 @@ class HcalTrigPrimDigiNtupler : public edm::stream::EDProducer<> {
 public:
 
   explicit HcalTrigPrimDigiNtupler(const edm::ParameterSet& ps);
-  ~HcalTrigPrimDigiNtupler() override { endJob(); delete fPFParArr; delete fFillerPF;}
+  ~HcalTrigPrimDigiNtupler() override { endJob(); delete fPFParArr; delete fFillerPF; delete fFillerGenInfo; delete fGenParArr;}
   //~HcalTrigPrimDigiNtupler() override { endJob(); delete fPFParArr; delete fFillerPF; delete fRHParArr; delete fFillerRH;}
   /**Produces the EDM products,*/
   void produce(edm::Event& e, const edm::EventSetup& c) override;
@@ -38,6 +39,7 @@ public:
 private:
   //HcalNtuple fNtuple;
   //FillerRH  *fFillerRH;
+  FillerGenInfo  *fFillerGenInfo;
   FillerPF  *fFillerPF;
 
   /// input tags for HCAL digis
@@ -61,6 +63,7 @@ private:
   TTree *fTree;
   //TClonesArray *fHcalArr;
   //TClonesArray *fRHParArr;
+  TClonesArray *fGenParArr;
   TClonesArray *fPFParArr;
 };
 

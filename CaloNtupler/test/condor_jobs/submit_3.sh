@@ -38,7 +38,7 @@ rm step2_${PU}pu.root
 
 fName="Output_${PU}pu_${ID}_${RANDOM}.root"
 mv Output_old.root $fName
-xrdcp $fName root://cmseos.fnal.gov//eos/uscms/store/user/jkrupa/pf_studies/newMinBiaspu_gen0_dR2/oldfn/${PU}pu/
+xrdcp $fName root://cmseos.fnal.gov//eos/uscms/store/user/jkrupa/pf_studies/pion_40pu_minbias_genpart
 rm $fName 
 rm *.py
 

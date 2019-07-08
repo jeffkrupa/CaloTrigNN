@@ -15,5 +15,5 @@ echo "error                   = error/${PU}pu.\$(ClusterId).\$(ProcId).err"  >> 
 echo "log                     = log/${PU}pu.\$(ClusterId).\$(ProcId).log"                >> tmp.sub
 echo "request_memory          = 4000" >> tmp.sub
 echo "+JobFlavour = \"longlunch\"  " >> tmp.sub
-echo "queue 1" >> tmp.sub
+echo "queue 100" >> tmp.sub
 condor_submit tmp.sub

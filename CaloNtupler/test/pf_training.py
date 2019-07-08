@@ -195,11 +195,11 @@ class TMVA_Analysis():
            self._lSigFile       = TFile.Open("sig.root","RECREATE")
            self._lBkgFile       = TFile.Open("bkg.root","RECREATE")
            self._lSigFile.cd()
-           self._lSigTree       = self._lInputTree.CopyTree("LV==1 && std::abs(eta) < 3.0 && std::abs(eta) > 2.5 && pt > 5")
+           self._lSigTree       = self._lInputTree.CopyTree("LV==1 && std::abs(eta) < 3.0 && std::abs(eta) > 1.7 && pt > 5")
            self._lSigTree.Write()
            self._lSigFile.Close() 
            self._lBkgFile.cd()
-           self._lBkgTree       = self._lInputTree.CopyTree("LV==0 && std::abs(eta) < 3.0 && std::abs(eta) > 2.5 && pt > 5")
+           self._lBkgTree       = self._lInputTree.CopyTree("LV==0 && std::abs(eta) < 3.0 && std::abs(eta) > 1.7 && pt > 5")
            self._lBkgTree.Write()
            self._lBkgFile.Close()
         
@@ -215,7 +215,7 @@ class TMVA_Analysis():
         nBkg = self._lBkgTree.GetEntries()
 
         nSigTrain = nSig*0.8
-        nBkgTrain = nSig*0.8
+        nBkgTrain = nSig*0.8*1.5
 
         self._lDataLoader.PrepareTrainingAndTestTree(TCut(""),TCut(""),"nTrain_Signal=%i:nTrain_Background=%i:nTest_Signal=%i:nTest_Background=%i:SplitMode=Random:NormMode=NumEvents:!V"%(nSigTrain,nBkgTrain,nSigTrain,nBkgTrain)) 
 
@@ -280,7 +280,7 @@ class TMVA_Analysis():
         model.save('model.h5')
         model.summary()
 
-        self._lFactory.BookMethod(self._lDataLoader, TMVA.Types.kPyKeras, 'PyKeras', 'H:!V:FilenameModel=model.h5:NumEpochs=40:BatchSize=100')
+        self._lFactory.BookMethod(self._lDataLoader, TMVA.Types.kPyKeras, 'PyKeras', 'H:!V:FilenameModel=model.h5:NumEpochs=10:BatchSize=500')
 
         frozen_graph = freeze_session(K.get_session(),
                               output_names=[out.op.name for out in model.outputs])
