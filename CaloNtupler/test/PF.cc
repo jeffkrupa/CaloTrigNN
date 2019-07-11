@@ -10,8 +10,44 @@
 #include "CaloTrigNN/DataFormats/interface/THcalDep.hh"
 #include <string>
 #include "DataFormats/Math/interface/deltaR.h"
+#include "tdrstyle.C"
 
 using namespace std;
+
+void drawTH1(TH1F * fY, TH1F * ch, TH1F * nh, std::string xlabel, std::string ylabel){
+    setTDRStyle();
+    TCanvas * c = new TCanvas("c","c",800,700);
+    auto legend = new TLegend(0.75,0.75,0.9,0.9);
+ 
+    fY->SetLineColor(1);
+    ch->SetLineColor(3);
+    nh->SetLineColor(5);
+    fY->SetLineWidth(2);
+    ch->SetLineWidth(2);
+    nh->SetLineWidth(2);
+
+    legend->AddEntry(fY,"Gamma");
+    legend->AddEntry(ch,"Charged hadron");
+    legend->AddEntry(nh,"Neutral hadron");
+
+   
+    fY->GetXaxis()->SetTitle("Fraction");
+    fY->GetYaxis()->SetTitle("Events");
+    fY->GetXaxis()->SetTitleSize(0.06);
+    fY->GetYaxis()->SetTitleSize(0.06);
+
+ 
+    fY->Draw("hist");
+    ch->Draw("hist same");
+    nh->Draw("hist same");
+    legend->Draw();
+    c->Update();
+
+    c->SaveAs("plots/match_breakdown.pdf");
+    c->SaveAs("plots/match_breakdown.png");
+    
+}
+
 void loop(std::string lName){
 
     TFile *lFile = new TFile(lName.c_str(), "READ");
@@ -39,30 +75,26 @@ void loop(std::string lName){
     lOut->Branch("depthFrac5"   , &fdepthFrac5   , "depthFrac5/f");
     lOut->Branch("depthFrac6"   , &fdepthFrac6   , "depthFrac6/f");
 
+    TH1F * fY  = new TH1F("gamma","gamma",50,0.,1.);
+    TH1F * fCH = new TH1F("ch","ch",50,0.,1.);
+    TH1F * fNH = new TH1F("nh","nh",50,0.,1.);
 
     for( int i0 = 0; i0 < lTree->GetEntriesFast(); i0++ ){ 
         lTree->GetEntry(i0);
         if (i0%10000 == 0) std::cout << i0 << " of " << lTree->GetEntriesFast() << " events processed " << std::endl;
 
-
-        std::vector<float> vpt; 
-        std::vector<float> veta;
-        std::vector<float> vphi;
-        std::vector<float> vdepth0;
-        std::vector<float> vdepth1; 
-        std::vector<float> vdepth2;
-        std::vector<float> vdepth3;
-        std::vector<float> vdepth4;
-        std::vector<float> vdepth5;
-        std::vector<float> vdepth6;
-
+        if (i0 == 10) break;
+	std::cout << "-----" << std::endl;
+	std::cout << "PF" << std::endl;
         for( int i1 = 0; i1 < fPFDepths->GetEntriesFast(); i1++ ){
-
            const baconhep::TPFPart *PF = (baconhep::TPFPart*)((*fPFDepths)[i1]); 
 
-	   vpt.push_back(PF->pt); 
-           veta.push_back(PF->eta);
-  	   vphi.push_back(PF->phi);
+           std::cout << "pt/eta/phi " << PF->pt << "/" << PF->eta << "/" << PF->phi << std::endl;
+
+	   vpt.push_back(PF->pt);  
+ 	   veta.push_back(PF->eta);
+	   vphi.push_back(PF->phi);
+	   vpftype.push_back(PF->pfType);
   	   vdepth0.push_back(PF->depthE[0]);
   	   vdepth1.push_back(PF->depthE[1]);
   	   vdepth2.push_back(PF->depthE[2]);
@@ -78,16 +110,30 @@ void loop(std::string lName){
 
            const baconhep::TGenParticle *GP = (baconhep::TGenParticle*)((*fGenParts)[i1]); 
 
+	   if (i1 == 1) break;
 	   float pt = 0, eta = 0, phi = 0, depth0 = 0, depth1 = 0, depth2 = 0, depth3 = 0, depth4 = 0, depth5 = 0, depth6 =0;
 
+ 	   std::cout << "-----" << std::endl;
+	   std::cout << "GEN" << " pt/eta/phi " << GP->pt << "/" << GP->eta << "/" << GP->phi << std::endl;
+	   
 	   for( unsigned i2 = 0; i2 < vpt.size(); i2++){
 
-	      if(reco::deltaR(GP->eta, GP->phi, veta[i2], vphi[i2]) > 0.15) continue;
+	      std::cout <<"dR/pt/eta/phi " << reco::deltaR(GP->eta, GP->phi, veta[i2], vphi[i2]) << "/" << vpt[i2] << "/" << veta[i2] << "/" << vphi[i2] << std::endl;
+	      if(reco::deltaR(GP->eta, GP->phi, veta[i2], vphi[i2]) > 0.1) continue;
+	      //std::cout << "pt/eta/phi " << vpt[i2] << "/" << veta[i2] << "/" << vphi[i2] << std::endl;
+	      //std::cout << "depths " << vdepth0[i2] << "/" << vdepth1[i2] << "/" << vdepth2[i2] << std::endl;
+	      if(vpftype[i2] == 4) {
+		  fY->Fill(vpt[i2] / GP->pt); 
+      		  continue;
+	      }
+	      if(vpftype[i2] == 1){
+		  fCH->Fill(vpt[i2] / GP->pt);
+	      }
+	      if(vpftype[i2] == 5){
+		  fNH->Fill(vpt[i2] / GP->pt);
+	      }
 
-              //std::cout << i2 << std::endl;
 	      pt     += vpt[i2]; 
- 	      eta    += veta[i2];
- 	      phi    += vphi[i2];
 	      depth0 += vdepth0[i2];
 	      depth1 += vdepth1[i2];
 	      depth2 += vdepth2[i2];
@@ -98,8 +144,8 @@ void loop(std::string lName){
       	      idx_to_del.push_back(i2); 
 	   }
 
-	   if (pt < 0.2*GP->pt) continue;
-           //if ( fabs( (pt - GP->pt)/ GP->pt) > 0.4 ) continue;   
+
+	   //if (pt < 0.2*GP->pt) continue;
           
 	   float sumE = depth0 + depth1 + depth2 + depth3 + depth4 + depth5 + depth6;
 
@@ -112,22 +158,24 @@ void loop(std::string lName){
 	     fdepthFrac4 = depth4 / sumE; 
 	     fdepthFrac5 = depth5 / sumE; 
 	     fdepthFrac6 = depth6 / sumE; 
+	     fLV = 1;
+	     lOut->Fill();
 	   }
-	   else{ 
-             fdepthFrac0 = 0.;	
-             fdepthFrac1 = 0.;	
-             fdepthFrac2 = 0.;	
-             fdepthFrac3 = 0.;	
-             fdepthFrac4 = 0.;	
-             fdepthFrac5 = 0.;	
-             fdepthFrac6 = 0.;	
+	   else{
+	     fdepthFrac0 = 0;
+	     fdepthFrac1 = 0;
+	     fdepthFrac2 = 0;
+	     fdepthFrac3 = 0;
+	     fdepthFrac4 = 0;
+	     fdepthFrac5 = 0;
+	     fdepthFrac6 = 0;
+	     fLV = 1; 
+	     lOut->Fill();
 	   }
- 	   fLV = 1;
-
-           lOut->Fill();
 	}
 
-	vpt.clear(); veta.clear(); vphi.clear();
+	vpt.clear(); 
+	vpftype.clear();
 	vdepth0.clear(); 
 	vdepth1.clear(); 
 	vdepth2.clear(); 
@@ -137,10 +185,15 @@ void loop(std::string lName){
 	vdepth6.clear();
 
         for( int i1 = 0; i1 < fPFDepths->GetEntriesFast(); i1++ ){
+	   const baconhep::TGenParticle *GP1 = (baconhep::TGenParticle*)((*fGenParts)[0]);
+	   const baconhep::TGenParticle *GP2 = (baconhep::TGenParticle*)((*fGenParts)[1]);
 
            const baconhep::TPFPart *PF = (baconhep::TPFPart*)((*fPFDepths)[i1]);
 	   if (std::find(idx_to_del.begin(), idx_to_del.end(), i1) != idx_to_del.end()) continue;
-	   //if (PF->pt < 1.) continue;
+	   if (PF->pt < 1.) continue;
+	   if (reco::deltaR(PF->eta,PF->phi,GP1->eta,GP1->phi) < 0.2) continue;
+	   if (reco::deltaR(PF->eta,PF->phi,GP2->eta,GP2->phi) < 0.2) continue;
+
 
            fPt = PF->pt ;
            fEta = PF->eta;
@@ -164,6 +217,7 @@ void loop(std::string lName){
     lOut->Write();
     lFile->Close();
 
+    drawTH1(fY,fCH,fNH,"pT fraction","Events");
 } 
 
 void PF(){
@@ -174,6 +228,9 @@ void PF(){
    //loop("/eos/uscms/store/user/jkrupa/pf_studies/newMinBiaspu_gen0_dR2/oldfn/Output.root");
    //loop("/eos/uscms/store/user/jkrupa/pf_studies/newMinBiaspu_gen0_dR2/oldfn/Apr2.root");
    //loop("/eos/uscms/store/user/jkrupa/pf_studies/pion_40pu_minbias_genpart/Output_40pu_1_30965.root");
-   loop("/eos/uscms/store/user/jkrupa/pf_studies/pion_40pu_minbias_genpart.root");
+   //loop("/eos/uscms/store/user/jkrupa/pf_studies/pion_40pu_minbias_genpart.root");
+   //loop("/eos/uscms/store/user/jkrupa/pf_studies/pion_40pu_minbias_genpart/t3_0pu/Output_all_0pu.root");
+   //loop("/eos/uscms/store/user/jkrupa/pf_studies/pion_40pu_minbias_genpart/t3/Output_40pu_17_21055.root");
    //loop("Output_old.root");
+   loop("/eos/uscms/store/user/jkrupa/pf_studies/pion_40pu_minbias_genpart/t3/Output_all_40pu.root");
 }
