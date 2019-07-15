@@ -12,6 +12,7 @@ std::vector<float> vdepth3;
 std::vector<float> vdepth4;
 std::vector<float> vdepth5;
 std::vector<float> vdepth6;
+std::vector<float> vgenE;
 
 
 float fPt = 0., fEnergy = 0., fPhi = 0., fEta = 0.; 

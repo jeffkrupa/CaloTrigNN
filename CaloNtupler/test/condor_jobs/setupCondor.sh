@@ -1,1 +1,1 @@
-voms-proxy-init --voms cms --out /uscms_data/d3/jkrupa/pf_studies/x509up --valid 168:00
+voms-proxy-init --voms cms --out ~/x509up --valid 168:00
