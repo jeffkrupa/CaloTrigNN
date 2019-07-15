@@ -84,7 +84,7 @@ process.mix.bunchspace = cms.int32(25)
 process.mix.minBunch = cms.int32(-12)
 process.mix.maxBunch = cms.int32(3)
 process.mix.input.fileNames = cms.untracked.vstring(
-'root://cmsxrootd.fnal.gov//store/mc/RunIIFall18GS/SingleNeutrinoGun/GEN-SIM/102X_upgrade2018_realistic_v11_ext5-v1/100000/4068E628-99AC-FC47-8FF3-75F35308588E.root'#files
+files#'root://cmsxrootd.fnal.gov//store/mc/RunIIFall18GS/SingleNeutrinoGun/GEN-SIM/102X_upgrade2018_realistic_v11_ext5-v1/100000/4068E628-99AC-FC47-8FF3-75F35308588E.root'#files
 )
 #process.mix.digitizers = cms.PSet(process.theDigitizersValid)
 #from Configuration.AlCa.GlobalTag import GlobalTag

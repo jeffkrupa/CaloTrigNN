@@ -216,7 +216,7 @@ class TMVA_Analysis():
         nBkg = self._lBkgTree.GetEntries()
 
         nSigTrain = nSig*0.8
-        nBkgTrain = nSig*0.8*1.5
+        nBkgTrain = nSig*0.8*1.2
 
         self._lDataLoader.PrepareTrainingAndTestTree(TCut(""),TCut(""),"nTrain_Signal=%i:nTrain_Background=%i:nTest_Signal=%i:nTest_Background=%i:SplitMode=Random:NormMode=NumEvents:!V"%(nSigTrain,nBkgTrain,nSigTrain,nBkgTrain)) 
 
