@@ -106,9 +106,9 @@ void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
     //std::cout << "PF Candidate: " << pId << std::endl;
     pId++;
     // construct object and place in array
-    //float genE = depthGenSum(&(*itPF),iSimHits,iRecNumber);
+    //pPF->genE = depthGenSum(&(*itPF),iSimHits,iRecNumber);
     
-    if (std::abs(itPF->eta()) > 3. || std::abs(itPF->eta()) < 1.7) continue;
+    //if (std::abs(itPF->eta()) > 3. || std::abs(itPF->eta()) < 1.7) continue;
     //if (genE / itPF->energy() < 0.1) continue;
 
     assert(rArray.GetEntries() < rArray.GetSize());
@@ -129,6 +129,7 @@ void FillerPF::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
     pPF->pfType    = itPF->particleId();
     pPF->ecalE     = itPF->ecalEnergy();
     pPF->hcalE     = itPF->hcalEnergy();
+    pPF->genE = depthGenSum(&(*itPF),iSimHits,iRecNumber);
     //pPF->avgdepth  = depth(&(*itPF),pPF,iSimHits,iRecNumber);
     float genE = 0.;
     genE           = depth(&(*itPF),pPF,iSimHits,iRecNumber);

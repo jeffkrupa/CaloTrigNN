@@ -26,7 +26,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1)
+    input = cms.untracked.int32(10)
 )
 
 # Input source
@@ -72,7 +72,7 @@ process.generator = cms.EDProducer("FlatRandomEGunProducer",
         MaxEta = cms.double(3.0),
         MaxPhi = cms.double(3.14159265359),
         MinEta = cms.double(1.7),
-        MinE = cms.double(0.99),
+        MinE = cms.double(30.),
         MinPhi = cms.double(-3.14159265359), ## in radians
 
         MaxE = cms.double(200.01)
@@ -80,7 +80,7 @@ process.generator = cms.EDProducer("FlatRandomEGunProducer",
     Verbosity = cms.untracked.int32(0), ## set to 1 (or greater)  for printouts
 
     psethack = cms.string('single pi E 50 HCAL'),
-    AddAntiParticle = cms.bool(True),
+    AddAntiParticle = cms.bool(False),
     firstRun = cms.untracked.uint32(1)
 )
 

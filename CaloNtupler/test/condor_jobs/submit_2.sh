@@ -8,12 +8,15 @@ echo "universe                =vanilla" > tmp.sub
 echo "executable              = "$exe >> tmp.sub
 echo "Should_Transfer_Files   = YES" >> tmp.sub
 echo "WhenToTransferOutput    = ON_EXIT_OR_EVICT" >> tmp.sub
-echo "Transfer_Input_Files    = "$exe, /uscms_data/d3/jkrupa/pf_studies/CMSSW_10_5_0_pre2.tgz >> tmp.sub
-echo "arguments               = \$(ClusterId)\$(ProcId)" $PU $ID /uscms_data/d3/jkrupa/pf_studies/x509up >> tmp.sub
+echo "+AcctGroup              = group_cmsuser.jkrupa" >> tmp.sub
+echo "+AccountingGroup        = group_cmsuser.jkrupa" >> tmp.sub
+echo "Transfer_Input_Files    = "$exe, /home/jkrupa/pf_studies/CMSSW_10_5_0_pre2.tgz >> tmp.sub
+echo "arguments               = \$(ClusterId)\$(ProcId)" $PU $ID /home/jkrupa/x509up >> tmp.sub
 echo "output                  = output/${PU}pu.\$(ClusterId).\$(ProcId).out" >> tmp.sub
 echo "error                   = error/${PU}pu.\$(ClusterId).\$(ProcId).err"  >> tmp.sub
 echo "log                     = log/${PU}pu.\$(ClusterId).\$(ProcId).log"                >> tmp.sub
 echo "request_memory          = 4000" >> tmp.sub
-echo "+JobFlavour = \"longlunch\"  " >> tmp.sub
-echo "queue 100" >> tmp.sub
+echo "x509userproxy           = /home/jkrupa/x509up" >> tmp.sub
+echo "+JobFlavour = \"workday\"  " >> tmp.sub
+echo "queue 200" >> tmp.sub
 condor_submit tmp.sub

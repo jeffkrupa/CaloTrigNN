@@ -72,10 +72,10 @@ process.generator = cms.EDProducer("FlatRandomEGunProducer",
         MaxEta = cms.double(-1.7),
         MaxPhi = cms.double(3.14159265359),
         MinEta = cms.double(-3.0),
-        MinE = cms.double(4.0),
+        MinE = cms.double(3.0),
         MinPhi = cms.double(-3.14159265359), ## in radians
 
-        MaxE = cms.double(200.01)
+        MaxE = cms.double(400.01)
     ),
     Verbosity = cms.untracked.int32(0), ## set to 1 (or greater)  for printouts
 
