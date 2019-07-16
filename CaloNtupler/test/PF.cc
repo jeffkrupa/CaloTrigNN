@@ -63,6 +63,7 @@ void loop(std::string lName){
     lTree->SetBranchAddress("PFDepth"    , &fPFDepths);
     lTree->SetBranchAddress("GenParticle", &fGenParts);
 
+    lOut->Branch("Ngenmatch"    , &fNum          , "Ngenmatch/i");
     lOut->Branch("LV"           , &fLV           , "LV/i");
     lOut->Branch("pt"		, &fPt		 , "pt/f");
     lOut->Branch("eta"		, &fEta      	 , "eta/f");
@@ -92,11 +93,11 @@ void loop(std::string lName){
 	vdepth5.clear(); 
 	vdepth6.clear();
         if (i0%10000 == 0) std::cout << i0 << " of " << lTree->GetEntriesFast() << " events processed " << std::endl;
-
+	std::cout << "evt " << i0 << " of " << lTree->GetEntriesFast() << std::endl;
         //if (i0 == 100) break;
         for( int i1 = 0; i1 < fPFDepths->GetEntriesFast(); i1++ ){
            const baconhep::TPFPart *PF = (baconhep::TPFPart*)((*fPFDepths)[i1]); 
-
+	   std::cout << i1 << std::endl;
 	   vpt.push_back(PF->pt);  
  	   veta.push_back(PF->eta);
 	   vphi.push_back(PF->phi);
@@ -119,16 +120,14 @@ void loop(std::string lName){
 
 	   float pt = 0, eta = 0, phi = 0, depth0 = 0, depth1 = 0, depth2 = 0, depth3 = 0, depth4 = 0, depth5 = 0, depth6 =0;
 
- 	   //std::cout << "-----" << std::endl;
-	   //std::cout << "GEN" << " pt/eta/phi " << GP->pt << "/" << GP->eta << "/" << GP->phi << std::endl;
 	   int num = 0;
-	   std::cout << "gen pt/eta/phi " << GP->pt << "/" << GP->eta << "/" << GP->phi << std::endl;
+	   //std::cout << "gen pt/eta/phi " << GP->pt << "/" << GP->eta << "/" << GP->phi << std::endl;
 	   for( unsigned i2 = 0; i2 < vpt.size(); i2++){
 
-	      //std::cout <<"dR/pt/eta/phi " << reco::deltaR(GP->eta, GP->phi, veta[i2], vphi[i2]) << "/" << vpt[i2] << "/" << veta[i2] << "/" << vphi[i2] << std::endl;
-	      //if(reco::deltaR(GP->eta, GP->phi, veta[i2], vphi[i2]) > 0.1) continue;
-	      //std::cout << "depths " << vdepth0[i2] << "/" << vdepth1[i2] << "/" << vdepth2[i2] << std::endl;
+	      if(reco::deltaR(GP->eta, GP->phi, veta[i2], vphi[i2]) > 0.1) continue;
+	      if(vpftype[i2] == 4) continue;
 	      if(vgenE[i2] <= 0.) continue;
+	      //std::cout << "depths " << vdepth0[i2] << "/" << vdepth1[i2] << "/" << vdepth2[i2] << std::endl;
 
 	      std::cout << "pt/eta/phi/dR " << vpt[i2] << "/" << veta[i2] << "/" << vphi[i2] << "/" << reco::deltaR(GP->eta, GP->phi, veta[i2], vphi[i2])  << std::endl;
 	      if(vpftype[i2] == 4) {
@@ -151,7 +150,7 @@ void loop(std::string lName){
 	      depth5 += vdepth5[i2];
 	      depth6 += vdepth6[i2];
       	      idx_to_del.push_back(i2); 
-
+	      
               ++num;
 	   }
 
@@ -171,6 +170,7 @@ void loop(std::string lName){
 	     fdepthFrac5 = depth5 / sumE; 
 	     fdepthFrac6 = depth6 / sumE; 
 	     fLV = 1;
+	     fNum = num;
 	     lOut->Fill();
 	   }
 	   else{
@@ -186,7 +186,7 @@ void loop(std::string lName){
 	   if (std::find(idx_to_del.begin(), idx_to_del.end(), i1) != idx_to_del.end()) continue;
 	   if (PF->pt < 1.) continue;
 	   if (reco::deltaR(PF->eta,PF->phi,GP1->eta,GP1->phi) < 0.2) continue;
-
+	   if (PF->pfType == 4) continue;
 
            fPt = PF->pt ;
            fEta = PF->eta;
