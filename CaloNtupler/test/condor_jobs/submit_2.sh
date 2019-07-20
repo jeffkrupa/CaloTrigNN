@@ -10,6 +10,8 @@ echo "Should_Transfer_Files   = YES" >> tmp.sub
 echo "WhenToTransferOutput    = ON_EXIT_OR_EVICT" >> tmp.sub
 echo "+AcctGroup              = group_cmsuser.jkrupa" >> tmp.sub
 echo "+AccountingGroup        = group_cmsuser.jkrupa" >> tmp.sub
+#echo "requirements            = (HAS_GPU == False)" >> tmp.sub
+echo "+HAS_GPU                = False" >> tmp.sub
 echo "Transfer_Input_Files    = "$exe, /home/jkrupa/pf_studies/CMSSW_10_5_0_pre2.tgz >> tmp.sub
 echo "arguments               = \$(ClusterId)\$(ProcId)" $PU $ID /home/jkrupa/x509up >> tmp.sub
 echo "output                  = output/${PU}pu.\$(ClusterId).\$(ProcId).out" >> tmp.sub
@@ -18,5 +20,5 @@ echo "log                     = log/${PU}pu.\$(ClusterId).\$(ProcId).log"       
 echo "request_memory          = 4000" >> tmp.sub
 echo "x509userproxy           = /home/jkrupa/x509up" >> tmp.sub
 echo "+JobFlavour = \"workday\"  " >> tmp.sub
-echo "queue 200" >> tmp.sub
+echo "queue 500" >> tmp.sub
 condor_submit tmp.sub

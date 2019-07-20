@@ -8,6 +8,9 @@
 <use   name="DataFormats/HepMCCandidate"/>
 <use   name="SimCalorimetry/HcalSimAlgos"/>
 <use   name="SimCalorimetry/CaloSimAlgos"/>
+<use   name="SimDataFormats/GeneratorProducts"/>
+<use   name="SimDataFormats/PileupSummaryInfo"/>
+<use   name="DataFormats/VertexReco"/>
 <use   name="Geometry/CaloGeometry"/>
 <use   name="CaloTrigNN/DataFormats"/>
 <flags   EDM_PLUGIN="1"/>

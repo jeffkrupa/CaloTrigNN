@@ -56,6 +56,8 @@ void FillerRH::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
   for(HBHERecHitCollection::const_iterator itRH = recHitHCAL->begin(); itRH != recHitHCAL->end(); itRH++) {
     pId++;
     // construct object and place in array
+    if (itRH->energy() < 0.2) continue;
+
     assert(rArray.GetEntries() < rArray.GetSize());
     const int index = rArray.GetEntries();
     new(rArray[index]) baconhep::TRHPart();

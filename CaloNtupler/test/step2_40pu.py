@@ -85,6 +85,12 @@ process.mix.minBunch = cms.int32(-12)
 process.mix.maxBunch = cms.int32(3)
 process.mix.input.fileNames = cms.untracked.vstring(
 files
+#['root://cmsxrootd.fnal.gov//store/mc/RunIIFall18GS/SingleNeutrinoGun/GEN-SIM/102X_upgrade2018_realistic_v11_ext1-v2/110000/572A2058-1028-D944-A641-AFE7FF55451A.root',
+#'root://cmsxrootd.fnal.gov//store/mc/RunIIFall18GS/SingleNeutrinoGun/GEN-SIM/102X_upgrade2018_realistic_v11_ext1-v2/110000/8755A4A4-1671-0D47-BB88-C5A05F91777A.root',
+#'root://cmsxrootd.fnal.gov//store/mc/RunIIFall18GS/SingleNeutrinoGun/GEN-SIM/102X_upgrade2018_realistic_v11_ext1-v2/110000/E6E45F49-9EF1-2F48-88F1-2042C2E85039.root',
+#'root://cmsxrootd.fnal.gov//store/mc/RunIIFall18GS/SingleNeutrinoGun/GEN-SIM/102X_upgrade2018_realistic_v11_ext1-v2/110000/FB8E7030-C586-254E-B912-4C7F64B2DB7E.root']
+
+
 )
 #process.mix.digitizers = cms.PSet(process.theDigitizersValid)
 #from Configuration.AlCa.GlobalTag import GlobalTag
@@ -101,21 +107,23 @@ process.FEVTDEBUGHLToutput_step = cms.EndPath(process.FEVTDEBUGHLToutput)
 
 # Schedule definition
 process.schedule = cms.Schedule(process.digitisation_step,process.L1simulation_step,process.digi2raw_step)
-#process.schedule.extend(process.HLTSchedule)
+process.schedule.extend(process.HLTSchedule)
 process.schedule.extend([process.endjob_step,process.FEVTDEBUGHLToutput_step])
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
-#process.options.numberOfThreads=cms.untracked.uint32(4)
+#process.options.numberOfThreads=cms.untracked.uint32(8)
 #process.options.numberOfStreams=cms.untracked.uint32(0)
+#process.options.numberOfConcurrentLuminosityBlocks=cms.untracked.uint32(1)
+
 
 # customisation of the process.
 
 # Automatic addition of the customisation function from HLTrigger.Configuration.customizeHLTforMC
-#from HLTrigger.Configuration.customizeHLTforMC import customizeHLTforMC 
+from HLTrigger.Configuration.customizeHLTforMC import customizeHLTforMC 
 
 #call to customisation function customizeHLTforMC imported from HLTrigger.Configuration.customizeHLTforMC
-#process = customizeHLTforMC(process)
+process = customizeHLTforMC(process)
 
 # End of customisation functions
 

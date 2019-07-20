@@ -159,14 +159,15 @@ void histogrammer( TFile &f, TTree &T, double min_ieta, double max_ieta, double 
 void analyzer_PF() {
 
     std::cout << "Start by opening ROOT file." << std::endl;
+    //TFile *f = new TFile("Output_old.rootskimmed.root");
     //TFile *f = new TFile("/eos/uscms/store/user/jkrupa/pf_studies/pion_40pu_minbias_genpart.rootskimmed.root","READ");
-    TFile *f = new TFile("/eos/uscms/store/user/jkrupa/pf_studies/pion_40pu_minbias_genpart/t3/Output_all_40pu.rootskimmed.root","READ");
+    //TFile *f = new TFile("/eos/uscms/store/user/jkrupa/pf_studies/pion_40pu_minbias_genpart/t3/Output_all_40pu.rootskimmed.root","READ");
     //TFile *f = new TFile("Output_old.rootskimmed.root","READ");
     TTree *T = (TTree*)f->Get("Events");
 
     TFile &rFile = *f; TTree &rTree = *T;
 
-    double etal[] = {2.0,2.5,2.8,3.0}; double ptl[] = {5.,10.,20.,10000.};
+    double etal[] = {1.7,3.0}; double ptl[] = {1.,10000.};
 
     for (int i0=0; i0 < sizeof(etal)/sizeof(etal[0]) -1; i0++){
      for (int i1=0; i1 < sizeof(ptl)/sizeof(ptl[0]) -1; i1++){

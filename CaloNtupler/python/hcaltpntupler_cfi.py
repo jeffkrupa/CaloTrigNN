@@ -28,8 +28,8 @@ simHcalTriggerPrimitiveNtuple = cms.EDProducer("HcalTrigPrimDigiNtupler",
     MinSignalThreshold = cms.uint32(0), # For HF PMT veto
     PMTNoiseThreshold = cms.uint32(0),  # For HF PMT veto
     LSConfig=LSParameter,
-                                               
     upgradeHF = cms.bool(True),
+    edmPileupInfoName = cms.untracked.string("addPileupInfo"),                
     upgradeHB = cms.bool(False),
     upgradeHE = cms.bool(True),
     inputLabel = cms.VInputTag(cms.InputTag('simHcalUnsuppressedDigis'),

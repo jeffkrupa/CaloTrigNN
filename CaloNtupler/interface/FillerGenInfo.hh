@@ -22,9 +22,26 @@ class FillerGenInfo
        FillerGenInfo(const edm::ParameterSet &iConfig,edm::ConsumesCollector && iC);
       ~FillerGenInfo();
       
-      void fill(TClonesArray     *particlesArr,   // output array of particles to be filled
-		const edm::Event &iEvent);         // EDM event info
+      void fill(TClonesArray     *particlesArr,  const edm::Event &iEvent);
+    protected:
 
+      std::string fPFCandName;
+      std::string fPUInfoName;
+      std::string fPVName;
+      std::string fBSName;
+      std::string fCaloMETName;
+      std::string fMETName;
+      edm::InputTag fPFMETName;
+      std::string fPFMETCName;
+      std::string fMVAMETName;
+      edm::InputTag fPUPPETName;
+      std::string fPUPPETCName;
+      std::string fALPACAMETName;
+      std::string fPALPACAMETName;
+      std::string fRhoIsoName;
+      std::string fRhoJetName;
+      bool fUseFilters;
+      bool fUseAOD;
     protected:        
       // EDM object collection names
       std::string fGenEvtInfoName;

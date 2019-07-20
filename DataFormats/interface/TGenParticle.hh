@@ -22,7 +22,7 @@ namespace baconhep
       float pt, eta, phi, mass, y;
       bool isPromptFinalState, isDirectPromptTauDecayProductFinalState, isHardProcess, fromHardProcessDecayed, fromHardProcessFinalState, isPromptDecayed;
 
-    ClassDef(TGenParticle,2)
+    ClassDef(TGenParticle,1)
   };
 }
 #endif

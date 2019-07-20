@@ -10,12 +10,14 @@
 #include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
 #include "DataFormats/FEDRawData/interface/FEDRawDataCollection.h"
 //#include "CaloTrigNN/CaloNtupler/interface/HcalNtuple.h"
+#include "CaloTrigNN/CaloNtupler/interface/FillerEventInfo.hh"
 #include "CaloTrigNN/CaloNtupler/interface/FillerGenInfo.hh"
 #include "CaloTrigNN/CaloNtupler/interface/FillerRH.hh"
 #include "CaloTrigNN/CaloNtupler/interface/FillerPF.hh"
 #include "CaloTrigNN/DataFormats/interface/THcalDep.hh"
 #include "CaloTrigNN/DataFormats/interface/TRHPart.hh"
 #include "CaloTrigNN/DataFormats/interface/TPFPart.hh"
+#include "CaloTrigNN/DataFormats/interface/TEventInfo.hh"
 #include <vector>
 #include "TFile.h"
 #include "TTree.h"
@@ -30,7 +32,7 @@ class HcalTrigPrimDigiNtupler : public edm::stream::EDProducer<> {
 public:
 
   explicit HcalTrigPrimDigiNtupler(const edm::ParameterSet& ps);
-  ~HcalTrigPrimDigiNtupler() override { endJob(); delete fPFParArr; delete fFillerPF; delete fFillerGenInfo; delete fGenParArr;}
+  ~HcalTrigPrimDigiNtupler() override { endJob(); delete fRHParArr; delete fFillerRH; delete fEvtArr; delete fFillerEventInfo; delete fPFParArr; delete fFillerPF; delete fFillerGenInfo; delete fGenParArr;}
   //~HcalTrigPrimDigiNtupler() override { endJob(); delete fPFParArr; delete fFillerPF; delete fRHParArr; delete fFillerRH;}
   /**Produces the EDM products,*/
   void produce(edm::Event& e, const edm::EventSetup& c) override;
@@ -38,7 +40,8 @@ public:
   
 private:
   //HcalNtuple fNtuple;
-  //FillerRH  *fFillerRH;
+  FillerRH  *fFillerRH;
+  FillerEventInfo *fFillerEventInfo;
   FillerGenInfo  *fFillerGenInfo;
   FillerPF  *fFillerPF;
 
@@ -62,7 +65,8 @@ private:
   TFile *fFile;
   TTree *fTree;
   //TClonesArray *fHcalArr;
-  //TClonesArray *fRHParArr;
+  TClonesArray *fRHParArr;
+  TClonesArray *fEvtArr;
   TClonesArray *fGenParArr;
   TClonesArray *fPFParArr;
 };
