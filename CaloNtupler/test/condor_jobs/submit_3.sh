@@ -34,13 +34,16 @@ cmsRun Pion_${PU}pu.py
 cmsRun step2_${PU}pu.py
 #cp step1_${PU}pu.root /data/t3home000/jkrupa/pf_studies/pion_40pu_minbias_genpart/test.root
 rm step1_${PU}pu.root
-cmsRun step3_RAW2DIGI_L1Reco_RECO_RECOSIM_PU.py
+cmsRun step3_${PU}pu.py #step3_RAW2DIGI_L1Reco_RECO_RECOSIM_PU.py
 rm step2_${PU}pu.root
 
 fName="Output_${PU}pu_${ID}_${RANDOM}.root"
-mv Output_old.root $fName
+fName3="Output_${PU}pu_${ID}_${RANDOM}_step3.root"
+
+mv Output_old.root $fName3
 #cp $fName /data/t3home000/jkrupa/pf_studies/pion_40pu_minbias_genpart/$fName
-xrdcp $fName root://cmseos.fnal.gov//eos/uscms/store/user/jkrupa/pf_studies/pion_40puMinBias_13TeV_2018_PFRHGPE
+#xrdcp $fName root://cmseos.fnal.gov//eos/uscms/store/user/jkrupa/pf_studies/pion_40puMinBias_13TeV_2018_PFRHGPE
+cp $fName3 /data/t3home000/jkrupa/rh_out/$fName3
 rm $fName 
 rm *.py
 

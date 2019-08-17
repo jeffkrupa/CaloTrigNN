@@ -17,8 +17,8 @@ echo "arguments               = \$(ClusterId)\$(ProcId)" $PU $ID /home/jkrupa/x5
 echo "output                  = output/${PU}pu.\$(ClusterId).\$(ProcId).out" >> tmp.sub
 echo "error                   = error/${PU}pu.\$(ClusterId).\$(ProcId).err"  >> tmp.sub
 echo "log                     = log/${PU}pu.\$(ClusterId).\$(ProcId).log"                >> tmp.sub
-echo "request_memory          = 4000" >> tmp.sub
+echo "request_memory          = 3000" >> tmp.sub
 echo "x509userproxy           = /home/jkrupa/x509up" >> tmp.sub
-echo "+JobFlavour = \"workday\"  " >> tmp.sub
+echo "+JobFlavour = \"longlunch\"  " >> tmp.sub
 echo "queue 500" >> tmp.sub
 condor_submit tmp.sub

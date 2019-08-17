@@ -51,7 +51,7 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('file:step2_40pu_v2.root'),
+    fileNames = cms.untracked.vstring('file:step2_40pu.root'),
     secondaryFileNames = cms.untracked.vstring()
 )
 
@@ -110,7 +110,7 @@ process.endjob_step = cms.EndPath(process.endOfProcess)
 process.RECOSIMoutput_step = cms.EndPath(process.RECOSIMoutput)
 
 # Schedule definition
-process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,process.ntuple_step,process.recosim_step,process.endjob_step)
+process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,process.RECOSIMoutput_step,process.ntuple_step,process.recosim_step,process.endjob_step)
 #process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.ntuple_step,process.recosim_step,process.endjob_step)
 #process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,process.recoPath,process.ntuple_step,process.recosim_step,process.endjob_step)
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask

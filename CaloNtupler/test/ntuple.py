@@ -46,7 +46,7 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-                            fileNames = cms.untracked.vstring('file:step2.root'),
+                            fileNames = cms.untracked.vstring('file:step2_40pu.root'),
                             #fileNames = cms.untracked.vstring('/store/mc/RunIISpring18DR/ZToEE_NNPDF30_13TeV-powheg_M_2300_3500/GEN-SIM-RAW/NZSPU40to70_100X_upgrade2018_realistic_v10-v2/30000/48381B53-4221-E811-B3F3-02163E019EFF.root'),
                             #/store/relval/CMSSW_10_0_0/RelValTTbar_13/GEN-SIM-DIGI-RAW//PU25ns_100X_upgrade2018_realistic_v6_muVal_resub-v1/10000/46DD663C-C106-E811-B77D-0025905B85DE.root'),
                             #'/store/mc/RunIISpring18DR/ZToEE_NNPDF30_13TeV-powheg_M_2300_3500/GEN-SIM-RAW/NZSPU40to70_100X_upgrade2018_realistic_v10-v2/30000/48381B53-4221-E811-B3F3-02163E019EFF.root'),
@@ -84,7 +84,7 @@ process.recoPath = cms.Path(
     *process.hbheprerecoM3
 )
 process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string("test.root")
+    fileName = cms.untracked.string("Output.root")
 )
 process.outpath = cms.EndPath(process.out)
 

@@ -64,17 +64,17 @@ HcalTrigPrimDigiNtupler::HcalTrigPrimDigiNtupler(const edm::ParameterSet& iPS)
   fRHParArr    = new TClonesArray("baconhep::TRHPart",5000);
   fEvtArr      = new TClonesArray("baconhep::TEventInfo",5000);
   fGenParArr   = new TClonesArray("baconhep::TGenParticle",5000);
-  fPFParArr    = new TClonesArray("baconhep::TPFPart",5000);
+  //fPFParArr    = new TClonesArray("baconhep::TPFPart",5000);
  
   fFillerEventInfo = new FillerEventInfo(iPS, consumesCollector()); 
   fFillerRH = new FillerRH(iPS,consumesCollector());
   fFillerGenInfo = new FillerGenInfo(iPS,consumesCollector()); 
-  fFillerPF    = new FillerPF(iPS,consumesCollector()); 
+  //fFillerPF    = new FillerPF(iPS,consumesCollector()); 
   fTree        = new TTree("Events","Events");
   //fTree->Branch("HcalPulse",  &fHcalArr); 
   fTree->Branch("EventInfo", &fEvtArr); 
   fTree->Branch("HcalRecHit", &fRHParArr); 
-  fTree->Branch("PFDepth"   , &fPFParArr);
+  //fTree->Branch("PFDepth"   , &fPFParArr);
   fTree->Branch("GenParticle", &fGenParArr); 
 }
 void HcalTrigPrimDigiNtupler::endJob() {
@@ -131,12 +131,12 @@ void HcalTrigPrimDigiNtupler::produce(edm::Event& iEvent, const edm::EventSetup&
   fEvtArr->Clear();
   fRHParArr->Clear();
   fGenParArr->Clear();
-  fPFParArr->Clear();
+  //fPFParArr->Clear();
   //fNtuple.fill(fHcalArr,inputCoder.product(), pSetup.product(), &(*pG),fGeometry,hfembit,lSimHits,fRecNumber,*hbheDigis,*hbheUpDigis,*hfUpDigis,*hfUpDigis);
   fFillerRH->fill(fRHParArr,iEvent,iSetup,lSimHits,fRecNumber);
   fFillerEventInfo->fill(fEvtArr,iEvent); 
   fFillerGenInfo->fill(fGenParArr,iEvent);
-  fFillerPF->fill(fPFParArr,iEvent,iSetup,lSimHits,fRecNumber);
+  //fFillerPF->fill(fPFParArr,iEvent,iSetup,lSimHits,fRecNumber);
   fTree->Fill();
   // Step C.1: Run FE Format Error / ZS for real data.
   //iEvent.put(std::move(result));

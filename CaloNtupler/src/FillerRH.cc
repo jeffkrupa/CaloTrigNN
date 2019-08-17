@@ -15,7 +15,7 @@
 #include <TClonesArray.h>
 #include <TMath.h>
 #include <TLorentzVector.h>
-
+#include <stdlib.h>
 using namespace baconhep;
 
 //--------------------------------------------------------------------------------------------------
@@ -56,7 +56,7 @@ void FillerRH::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
   for(HBHERecHitCollection::const_iterator itRH = recHitHCAL->begin(); itRH != recHitHCAL->end(); itRH++) {
     pId++;
     // construct object and place in array
-    if (itRH->energy() < 0.2) continue;
+    if (itRH->energy() < 0.2 && rand() % 50 != 2) continue;
 
     assert(rArray.GetEntries() < rArray.GetSize());
     const int index = rArray.GetEntries();

@@ -10,7 +10,7 @@ arguments               = $(ClusterId)$(ProcId) 40 1 /home/jkrupa/x509up
 output                  = output/40pu.$(ClusterId).$(ProcId).out
 error                   = error/40pu.$(ClusterId).$(ProcId).err
 log                     = log/40pu.$(ClusterId).$(ProcId).log
-request_memory          = 4000
+request_memory          = 3000
 x509userproxy           = /home/jkrupa/x509up
-+JobFlavour = "workday"  
++JobFlavour = "longlunch"  
 queue 500

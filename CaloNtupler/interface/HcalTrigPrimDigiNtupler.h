@@ -32,7 +32,7 @@ class HcalTrigPrimDigiNtupler : public edm::stream::EDProducer<> {
 public:
 
   explicit HcalTrigPrimDigiNtupler(const edm::ParameterSet& ps);
-  ~HcalTrigPrimDigiNtupler() override { endJob(); delete fRHParArr; delete fFillerRH; delete fEvtArr; delete fFillerEventInfo; delete fPFParArr; delete fFillerPF; delete fFillerGenInfo; delete fGenParArr;}
+  ~HcalTrigPrimDigiNtupler() override { endJob(); delete fRHParArr; delete fFillerRH; delete fEvtArr; delete fFillerEventInfo; delete fFillerGenInfo; delete fGenParArr;}
   //~HcalTrigPrimDigiNtupler() override { endJob(); delete fPFParArr; delete fFillerPF; delete fRHParArr; delete fFillerRH;}
   /**Produces the EDM products,*/
   void produce(edm::Event& e, const edm::EventSetup& c) override;
@@ -43,7 +43,7 @@ private:
   FillerRH  *fFillerRH;
   FillerEventInfo *fFillerEventInfo;
   FillerGenInfo  *fFillerGenInfo;
-  FillerPF  *fFillerPF;
+  //FillerPF  *fFillerPF;
 
   /// input tags for HCAL digis
   std::vector<edm::InputTag> fInputLabel;
@@ -68,7 +68,7 @@ private:
   TClonesArray *fRHParArr;
   TClonesArray *fEvtArr;
   TClonesArray *fGenParArr;
-  TClonesArray *fPFParArr;
+  //TClonesArray *fPFParArr;
 };
 
 #endif
