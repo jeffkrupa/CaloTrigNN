@@ -15,7 +15,8 @@ namespace baconhep
 	time(0),timefalling(0),
 	x(0),y(0),z(0),
 	genE(0),genEDepth(0),genETime(0),
-	samples(0),soi(0),inPedAvg(0),gain(0)
+	samples(0),soi(0),inPedAvg(0),gain(0),
+        lambda(0), darkCurrent(0)
     {}
     ~TRHPart(){}
 
@@ -25,6 +26,7 @@ namespace baconhep
     float x,y,z;
     float genE,genEDepth,genETime;
     float samples,soi,inPedAvg,gain;
+    float lambda, darkCurrent;
     std::vector<float> ts;
     std::vector<float> raw;
     std::vector<float> ped;

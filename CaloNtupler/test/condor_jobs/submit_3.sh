@@ -4,8 +4,8 @@ date
 PU=$2
 ID=$3
 #export X509_USER_PROXY=$4
-CMSSW="CMSSW_10_5_0_pre2"
-CMSSW_TGZ="CMSSW_10_5_0_pre2.tgz"
+CMSSW="CMSSW_10_6_1_patch1"
+CMSSW_TGZ="CMSSW_10_6_1_patch1.tgz"
 
 #voms-proxy-info -all
 #voms-proxy-info -all -file $4
@@ -18,7 +18,7 @@ CMSSW_TGZ="CMSSW_10_5_0_pre2.tgz"
 tar -xf $CMSSW_TGZ 
 rm $CMSSW_TGZ
 source /cvmfs/cms.cern.ch/cmsset_default.sh
-export SCRAM_ARCH=slc6_amd64_gcc700
+export SCRAM_ARCH=slc7_amd64_gcc700
 
 scramv1 project CMSSW $CMSSW
 cd $CMSSW/src/CaloTrigNN/CaloNtupler/test
@@ -30,20 +30,20 @@ eval `scramv1 runtime -sh`
 
 echo "CMSSW: "$CMSSW_BASE
 
-cmsRun Pion_${PU}pu.py
-cmsRun step2_${PU}pu.py
+cmsRun Piongen.py
+cmsRun step1.py
 #cp step1_${PU}pu.root /data/t3home000/jkrupa/pf_studies/pion_40pu_minbias_genpart/test.root
-rm step1_${PU}pu.root
-cmsRun step3_${PU}pu.py #step3_RAW2DIGI_L1Reco_RECO_RECOSIM_PU.py
-rm step2_${PU}pu.root
+rm step1.root
+cmsRun finalstep.py #step3_RAW2DIGI_L1Reco_RECO_RECOSIM_PU.py
+rm step2.root
 
 fName="Output_${PU}pu_${ID}_${RANDOM}.root"
 fName3="Output_${PU}pu_${ID}_${RANDOM}_step3.root"
 
 mv Output_old.root $fName3
 #cp $fName /data/t3home000/jkrupa/pf_studies/pion_40pu_minbias_genpart/$fName
-#xrdcp $fName root://cmseos.fnal.gov//eos/uscms/store/user/jkrupa/pf_studies/pion_40puMinBias_13TeV_2018_PFRHGPE
-cp $fName3 /data/t3home000/jkrupa/rh_out/$fName3
+xrdcp $fName3 root://cmseos.fnal.gov//eos/uscms/store/user/jkrupa/pf_studies/pion_40puMinBias_14TeV_Run3_RH
+#cp $fName3 /data/t3home000/jkrupa/rh_out/$fName3
 rm $fName 
 rm *.py
 

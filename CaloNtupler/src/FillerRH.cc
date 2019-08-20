@@ -56,7 +56,7 @@ void FillerRH::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
   for(HBHERecHitCollection::const_iterator itRH = recHitHCAL->begin(); itRH != recHitHCAL->end(); itRH++) {
     pId++;
     // construct object and place in array
-    if (itRH->energy() < 0.2 && rand() % 50 != 2) continue;
+    if (itRH->energy() < 0.2 && rand() % 100 != 2) continue;
 
     assert(rArray.GetEntries() < rArray.GetSize());
     const int index = rArray.GetEntries();
@@ -140,6 +140,9 @@ void FillerRH::fillTS(HcalDetId &iDetId,baconhep::TRHPart *iHcal,const HBHEChann
 			     pChannel.tsPedestalWidth(2)*pChannel.tsPedestalWidth(2)+
 			     pChannel.tsPedestalWidth(3)*pChannel.tsPedestalWidth(3) );
     iHcal->gain     = pChannel.tsGain(0);
+    iHcal->lambda   = pChannel.lambda();
+    iHcal->darkCurrent = pChannel.darkCurrent();
+
     for (unsigned int iTS=0; iTS<pChannel.nSamples(); ++iTS) {
       double raw = pChannel.tsRawCharge(iTS);
       double ped = pChannel.tsPedestal(iTS);
