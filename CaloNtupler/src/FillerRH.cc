@@ -72,23 +72,25 @@ void FillerRH::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
     pVec.SetPxPyPzE( pCellPos.x()/pR * itRH->energy(),       pCellPos.y()/pR * itRH->energy(),       pCellPos.z()/pR * itRH->energy(),itRH->energy()); 
     // Kinematics
     //==============================    
-    pRH->pt     = pVec.Pt();
-    pRH->eta    = pVec.Eta();
-    pRH->phi    = pVec.Phi();
-    pRH->rho    = pCellPos.perp();
-    pRH->ieta   = itRH->id().ieta();
-    pRH->iphi   = itRH->id().iphi();
-    pRH->depth  = itRH->id().depth();
+    //pRH->pt     = pVec.Pt();
+    //pRH->eta    = pVec.Eta();
+    //pRH->phi    = pVec.Phi();
+    //pRH->rho    = pCellPos.perp();
+    //pRH->ieta   = itRH->id().ieta();
+    //pRH->iphi   = itRH->id().iphi();
+    //pRH->depth  = itRH->id().depth();
     //pRH->timefalling   = itRH->timeFalling();
     pRH->energy = itRH->energy();
-    pRH->eraw   = itRH->eraw();
-    pRH->em3    = itRH->eaux();
-    pRH->time   = itRH->time();
+    //pRH->eraw   = itRH->eraw();
+    //pRH->em3    = itRH->eaux();
+    //pRH->time   = itRH->time();
     pRH->x      = pCellPos.x();
     pRH->y      = pCellPos.y();
     pRH->z      = pCellPos.z();
-    fillGen(pId,itRH->id().ieta(),itRH->id().iphi(),pRH,iSimHits,iRecNumber);
-    fillTS(pId,pRH,channelInfo);
+    if(genE)    pRH->hit    = 1;
+    else        pRH->hit    = 0;
+    //fillGen(pId,itRH->id().ieta(),itRH->id().iphi(),pRH,iSimHits,iRecNumber);
+    //fillTS(pId,pRH,channelInfo);
   } 
 }
 double FillerRH::getGen(HcalDetId &iDetId,int iIEta,int iIPhi,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber) { 
