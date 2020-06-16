@@ -4,7 +4,6 @@
 # Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
 # with command line options: TTbar_13TeV_TuneCUETP8M1_cfi --conditions 106X_upgrade2021_realistic_v5 --beamspot Run3RoundOptics25ns13TeVLowSigmaZ -n 10 --era Run3 --eventcontent FEVTDEBUG --relval 9000,50 -s GEN,SIM --datatier GEN-SIM --geometry DB:Extended --fileout file:step1.root --no_exec
 import FWCore.ParameterSet.Config as cms
-
 from Configuration.Eras.Era_Run3_cff import Run3
 
 process = cms.Process('SIM',Run3)
@@ -26,7 +25,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10)
+    input = cms.untracked.int32(50)
 )
 
 # Input source
@@ -64,18 +63,17 @@ process.FEVTDEBUGoutput = cms.OutputModule("PoolOutputModule",
 process.XMLFromDBSource.label = cms.string("Extended")
 process.genstepfilter.triggerConditions=cms.vstring("generation_step")
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '106X_upgrade2021_realistic_v5', '')
-
+process.GlobalTag = GlobalTag(process.GlobalTag, '106X_upgrade2021_realistic_v5','')
 process.generator = cms.EDProducer("FlatRandomEGunProducer",
     PGunParameters = cms.PSet(
         PartID = cms.vint32(211),
         MaxEta = cms.double(3.0),
         MaxPhi = cms.double(3.14159265359),
         MinEta = cms.double(-3.0),
-        MinE = cms.double(2.),
+        MinE = cms.double(0.1),
         MinPhi = cms.double(-3.14159265359), ## in radians
 
-        MaxE = cms.double(200.01)
+        MaxE = cms.double(300.01)
     ),
     Verbosity = cms.untracked.int32(0), ## set to 1 (or greater)  for printouts
 
@@ -102,6 +100,8 @@ associatePatAlgosToolsTask(process)
 for path in process.paths:
 	getattr(process,path).insert(0, process.ProductionFilterSequence)
 
+#process.options.numberOfThreads=cms.untracked.uint32(8)
+#process.options.numberOfStreams=cms.untracked.uint32(0)
 
 # Customisation from command line
 

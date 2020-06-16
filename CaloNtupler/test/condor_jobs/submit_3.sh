@@ -32,7 +32,6 @@ echo "CMSSW: "$CMSSW_BASE
 
 cmsRun Piongen.py
 cmsRun step1.py
-#cp step1_${PU}pu.root /data/t3home000/jkrupa/pf_studies/pion_40pu_minbias_genpart/test.root
 rm step1.root
 cmsRun finalstep.py #step3_RAW2DIGI_L1Reco_RECO_RECOSIM_PU.py
 rm step2.root
@@ -42,9 +41,9 @@ fName3="Output_${PU}pu_${ID}_${RANDOM}_step3.root"
 
 mv Output_old.root $fName3
 #cp $fName /data/t3home000/jkrupa/pf_studies/pion_40pu_minbias_genpart/$fName
-xrdcp $fName3 root://cmseos.fnal.gov//eos/uscms/store/user/jkrupa/pf_studies/pion_40puMinBias_14TeV_Run3_RH
+#xrdcp $fName3 root://cmseos.fnal.gov//eos/uscms/store/user/jkrupa/pf_studies/pion_rh_106X_upgrade2021_realistic_v5_RH_ZSgenEgt02_0pu #eos/uscms/store/user/jkrupa/pf_studies/pion_40puMinBias_14TeV_Run3_RH_ZS_genEgt1
+xrdcp $fName3 root://cmseos.fnal.gov//store/user/jkrupa/rh_106X_upgrade2021_realistic_v5_RH_ZSgenEgt01_PUFlat55to75Run3OOTPU
 #cp $fName3 /data/t3home000/jkrupa/rh_out/$fName3
 rm $fName 
-rm *.py
 
 date

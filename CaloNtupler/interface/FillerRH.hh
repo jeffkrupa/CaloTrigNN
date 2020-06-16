@@ -29,6 +29,7 @@ class FillerRH
     void fill(TClonesArray       *array,    // output array to be filled
 	      const edm::Event   &iEvent,const edm::EventSetup &iSetup,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber);  // event info
 
+    double getGen(HcalDetId &iDetId,int iIEta,int iIPhi,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber); 
     void fillGen(HcalDetId &iDetId,int iIEta,int iIPhi,baconhep::TRHPart *iHcal,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber);
     void fillTS (HcalDetId &iDetId,baconhep::TRHPart *iHcal,const HBHEChannelInfoCollection *iChannelInfo);   
 

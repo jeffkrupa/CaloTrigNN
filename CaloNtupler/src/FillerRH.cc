@@ -56,7 +56,11 @@ void FillerRH::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
   for(HBHERecHitCollection::const_iterator itRH = recHitHCAL->begin(); itRH != recHitHCAL->end(); itRH++) {
     pId++;
     // construct object and place in array
-    if (itRH->energy() < 0.2 && rand() % 100 != 2) continue;
+    //if (itRH->energy() < 0.2 && rand() % 100 != 2) continue;
+    HcalDetId pId = itRH->id();
+    double genE = getGen(pId,itRH->id().ieta(),itRH->id().iphi(),iSimHits,iRecNumber);
+    if(genE < 0.1) continue;
+
 
     assert(rArray.GetEntries() < rArray.GetSize());
     const int index = rArray.GetEntries();
@@ -83,10 +87,26 @@ void FillerRH::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
     pRH->x      = pCellPos.x();
     pRH->y      = pCellPos.y();
     pRH->z      = pCellPos.z();
-    HcalDetId pId = itRH->id();
     fillGen(pId,itRH->id().ieta(),itRH->id().iphi(),pRH,iSimHits,iRecNumber);
     fillTS(pId,pRH,channelInfo);
   } 
+}
+double FillerRH::getGen(HcalDetId &iDetId,int iIEta,int iIPhi,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber) { 
+  double samplingFactor = 1;
+  if(iDetId.subdet() == HcalBarrel) {
+    samplingFactor = fSimParameterMap.hbParameters().samplingFactor(iDetId);
+  } else if (iDetId.subdet() == HcalEndcap) {
+    samplingFactor = fSimParameterMap.heParameters().samplingFactor(iDetId);
+  }
+  HcalDetId simIdneed;
+  double sHitEn=0;
+  for (int j=0; j < (int) iSimHits.size(); j++) {
+    HcalDetId simId = HcalHitRelabeller::relabel((iSimHits)[j].id(), iRecNumber);
+    if (simId == iDetId ){
+      sHitEn += samplingFactor*((iSimHits)[j].energy());
+    }
+  }
+  return sHitEn;
 }
 void FillerRH::fillGen(HcalDetId &iDetId,int iIEta,int iIPhi,baconhep::TRHPart *iHcal,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber) { 
   double samplingFactor = 1;
