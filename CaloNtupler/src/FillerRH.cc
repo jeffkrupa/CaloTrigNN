@@ -74,17 +74,12 @@ void FillerRH::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
   int pId = 0; 
 
   std::map<HcalDetId, std::pair<int,float>> RHClusterMap = getRHCluster(recHitHCAL, pfCHCAL, fHCAL);
-  //for(HBHERecHitCollection::const_iterator itRH = recHitHCAL->begin(); itRH != recHitHCAL->end(); itRH++) {
-  //  HcalDetId pId = itRH->id();
-  //  std::cout << pId.ieta() << "\t" << pId.iphi() << "\t" << RHClusterMap[pId].size() << std::endl;
-  //}
 
   for(HBHERecHitCollection::const_iterator itRH = recHitHCAL->begin(); itRH != recHitHCAL->end(); itRH++) {
     pId++;
     // construct object and place in array
     HcalDetId pId = itRH->id();
     double genE = getGen(pId,itRH->id().ieta(),itRH->id().iphi(),iSimHits,iRecNumber);
-    //std::cout << genE << std::endl;
     assert(rArray.GetEntries() < rArray.GetSize());
     const int index = rArray.GetEntries();
     new(rArray[index]) baconhep::TRHPart();
@@ -97,8 +92,6 @@ void FillerRH::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
     //==============================    
     pRH->timeFalling   = itRH->timeFalling();
     pRH->energy = itRH->energy();
-    //pRH->eraw   = itRH->eraw();
-    //pRH->em3    = itRH->eaux();
     pRH->eta    = pVec.Eta();
     pRH->phi    = pVec.Phi();
     pRH->time   = itRH->time();
@@ -142,12 +135,9 @@ void FillerRH::fill(TClonesArray *array,const edm::Event &iEvent,const edm::Even
 }
 */
 std::map<HcalDetId, std::pair<int,float>> FillerRH::getRHCluster(const HBHERecHitCollection *recHitHCAL, const reco::PFClusterCollection *pfCHCAL, const CaloSubdetectorGeometry *fHCAL){
-    //std::cout << "getParticleMatch"<< RHeta << "/" << RHphi << std::endl;
 
     std::map<HcalDetId, std::pair<int,float>> RHClusterMap;
-    
     for(HBHERecHitCollection::const_iterator itRH = recHitHCAL->begin(); itRH != recHitHCAL->end(); itRH++) {
-        //std::vector<int> pMatch;
         GlobalPoint pCellPos  = fHCAL->getGeometry(itRH->detid())->getPosition();
         TLorentzVector pVec; 
         double pR = sqrt(pCellPos.x()*pCellPos.x() + pCellPos.y()*pCellPos.y() + pCellPos.z()*pCellPos.z());
@@ -159,7 +149,6 @@ std::map<HcalDetId, std::pair<int,float>> FillerRH::getRHCluster(const HBHERecHi
               float d = std::sqrt(reco::deltaR2(itC->eta(), itC->phi(), pVec.Eta(), pVec.Phi())) ;
               if (d < minClusterDistance) {minClusterDistance = d; clusterMatch = std::distance(pfCHCAL->begin(), itC);}
         }  
-        std::cout << minClusterDistance << std::endl; 
         HcalDetId pId = itRH->id(); 
         RHClusterMap[pId].first = clusterMatch;
         RHClusterMap[pId].second = minClusterDistance;
@@ -168,7 +157,6 @@ std::map<HcalDetId, std::pair<int,float>> FillerRH::getRHCluster(const HBHERecHi
 }
 
 int FillerRH::getParticleMatch(float RHeta,float RHphi, const reco::GenParticleCollection *genParticles){
-    //std::cout << "getParticleMatch"<< RHeta << "/" << RHphi << std::endl;
     int pMatch(0);
     for (reco::GenParticleCollection::const_iterator itGenP = genParticles->begin(); itGenP!=genParticles->end(); ++itGenP) {
         if(itGenP->status() == 1 && itGenP->isLastCopy()) 
