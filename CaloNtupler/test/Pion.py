@@ -26,7 +26,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10)
+    input = cms.untracked.int32(50)
 )
 
 # Input source
@@ -66,6 +66,45 @@ process.genstepfilter.triggerConditions=cms.vstring("generation_step")
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2018_realistic', '')
 
+process.generator = cms.EDFilter("Pythia8GeneratorFilter",
+    PythiaParameters = cms.PSet(
+        parameterSets = cms.vstring(
+            'pythia8CommonSettings',
+            'pythia8CUEP8M1Settings',
+            'processParameters'
+        ),
+        processParameters = cms.vstring(
+            'Top:gg2ttbar = on ',
+            'Top:qqbar2ttbar = on ',
+            '6:m0 = 175 '
+        ),
+        pythia8CUEP8M1Settings = cms.vstring(
+            'Tune:pp 14',
+            'Tune:ee 7',
+            'MultipartonInteractions:pT0Ref=2.4024',
+            'MultipartonInteractions:ecmPow=0.25208',
+            'MultipartonInteractions:expPow=1.6'
+        ),
+        pythia8CommonSettings = cms.vstring(
+            'Tune:preferLHAPDF = 2',
+            'Main:timesAllowErrors = 10000',
+            'Check:epTolErr = 0.01',
+            'Beams:setProductionScalesFromLHEF = off',
+            'SLHA:keepSM = on',
+            'SLHA:minMassSM = 1000.',
+            'ParticleDecays:limitTau0 = on',
+            'ParticleDecays:tau0Max = 10',
+            'ParticleDecays:allowPhotonRadiation = on'
+        )
+    ),
+    comEnergy = cms.double(13000.0),
+    filterEfficiency = cms.untracked.double(1.0),
+    maxEventsToPrint = cms.untracked.int32(0),
+    pythiaHepMCVerbosity = cms.untracked.bool(False),
+    pythiaPylistVerbosity = cms.untracked.int32(0)
+)
+
+'''
 process.generator = cms.EDProducer("FlatRandomEGunProducer",
     PGunParameters = cms.PSet(
         PartID = cms.vint32(211),
@@ -80,11 +119,11 @@ process.generator = cms.EDProducer("FlatRandomEGunProducer",
     Verbosity = cms.untracked.int32(0), ## set to 1 (or greater)  for printouts
 
     psethack = cms.string('single pi E 50 HCAL'),
-    AddAntiParticle = cms.bool(False),
+    AddAntiParticle = cms.bool(True),
     firstRun = cms.untracked.uint32(1)
 )
 
-
+'''
 process.ProductionFilterSequence = cms.Sequence(process.generator)
 
 # Path and EndPath definitions
