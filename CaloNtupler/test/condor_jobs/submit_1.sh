@@ -6,5 +6,5 @@
 
 PU=$1
 x=$2
-#source tar.sh
+source tar.sh
 bash submit_2.sh submit_3.sh $PU $x

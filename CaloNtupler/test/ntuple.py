@@ -4,10 +4,10 @@
 # Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
 # with command line options: l1Ntuple -s RAW2DIGI --era=Run2_2018 --mc --python_filename=mc.py --no_output -n 202 --conditions=100X_upgrade2018_realistic_v11 --customise=L1Trigger/Configuration/customiseReEmul.L1TReEmulMCFromRAWSimHcalTP --customise=L1Trigger/L1TNtuples/customiseL1Ntuple.L1NtupleRAWEMUGEN_MC --customise=L1Trigger/Configuration/customiseSettings.L1TSettingsToCaloParams_2018_v1_1_inconsistent --custom_conditions=HcalChannelQuality_2018_v3.0_mc,HcalChannelQualityRcd,frontier://FrontierProd/CMS_CONDITIONS --filein=/store/mc/RunIISpring18DR/QCD_Pt-15to3000_TuneCP5_Flat_13TeV_pythia8/GEN-SIM-RAW/NZSPU0to70_100X_upgrade2018_realistic_v10-v1/100001/1A22F20B-8321-E811-AABF-1866DAEA6C40.root
 import FWCore.ParameterSet.Config as cms
+from Configuration.Eras.Era_Run3_cff import Run3
 
-from Configuration.StandardSequences.Eras import eras
+process = cms.Process('RECO',Run3)
 
-process = cms.Process('RAW2DIGI',eras.Run2_2018)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -21,36 +21,15 @@ process.load('Configuration.StandardSequences.RawToDigi_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
-
+#process.load("Configuration.Geometry.GeometryExtended2021Reco_cff")
 process.hbheprereco.saveInfos = cms.bool(True)
-process.hbheprerecoMahi = process.hbheprereco.clone()
-process.hbheprerecoMahi.algorithm.__setattr__('useMahi',cms.bool(True))
-process.hbheprerecoMahi.algorithm.__setattr__('useM2',cms.bool(False))
-process.hbheprerecoMahi.algorithm.__setattr__('useM3',cms.bool(False))
-process.hbheprerecoMahi.algorithm.__setattr__('applyPedConstraint',cms.bool(False))
-process.hbheprerecoMahi.algorithm.__setattr__('applyTimeConstraint',cms.bool(False))
-
-process.hbheprerecoM2 = process.hbheprereco.clone()
-process.hbheprerecoM2.algorithm.__setattr__('useMahi',cms.bool(False))
-process.hbheprerecoM2.algorithm.__setattr__('useM2',cms.bool(True))
-process.hbheprerecoM2.algorithm.__setattr__('useM3',cms.bool(False))
-
-process.hbheprerecoM3 = process.hbheprereco.clone()
-process.hbheprerecoM3.algorithm.__setattr__('useMahi',cms.bool(False))
-process.hbheprerecoM3.algorithm.__setattr__('useM2',cms.bool(False))
-process.hbheprerecoM3.algorithm.__setattr__('useM3',cms.bool(True))
-
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(100)
+    input = cms.untracked.int32(-1)
 )
 
 # Input source
 process.source = cms.Source("PoolSource",
-                            fileNames = cms.untracked.vstring('file:step2_40pu.root'),
-                            #fileNames = cms.untracked.vstring('/store/mc/RunIISpring18DR/ZToEE_NNPDF30_13TeV-powheg_M_2300_3500/GEN-SIM-RAW/NZSPU40to70_100X_upgrade2018_realistic_v10-v2/30000/48381B53-4221-E811-B3F3-02163E019EFF.root'),
-                            #/store/relval/CMSSW_10_0_0/RelValTTbar_13/GEN-SIM-DIGI-RAW//PU25ns_100X_upgrade2018_realistic_v6_muVal_resub-v1/10000/46DD663C-C106-E811-B77D-0025905B85DE.root'),
-                            #'/store/mc/RunIISpring18DR/ZToEE_NNPDF30_13TeV-powheg_M_2300_3500/GEN-SIM-RAW/NZSPU40to70_100X_upgrade2018_realistic_v10-v2/30000/48381B53-4221-E811-B3F3-02163E019EFF.root'),
-                            #fileNames = cms.untracked.vstring('/store/mc/RunIISpring18DR/QCD_Pt-15to3000_TuneCP5_Flat_13TeV_pythia8/GEN-SIM-RAW/NZSPU0to70_100X_upgrade2018_realistic_v10-v1/100001/1A22F20B-8321-E811-AABF-1866DAEA6C40.root'),
+                            fileNames = cms.untracked.vstring('file:step2.root'),
     secondaryFileNames = cms.untracked.vstring()
 )
 
@@ -71,24 +50,19 @@ process.configurationMetadata = cms.untracked.PSet(
 
 # Other statements
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '100X_upgrade2018_realistic_v11', 'HcalChannelQuality_2018_v3.0_mc,HcalChannelQualityRcd,frontier://FrontierProd/CMS_CONDITIONS')
+process.GlobalTag = GlobalTag(process.GlobalTag, '112X_mcRun3_2021_realistic_v10', '')
 
 # Path and EndPath definitions
+process.out = cms.OutputModule("PoolOutputModule",
+    fileName = cms.untracked.string("Output.root")
+)
+process.outpath = cms.EndPath(process.out)
 process.digiPath = cms.Path(
     process.hcalDigis
 )
 process.recoPath = cms.Path(
     process.hbheprereco
-    *process.hbheprerecoMahi
-    *process.hbheprerecoM2
-    *process.hbheprerecoM3
 )
-process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string("Output.root")
-)
-process.outpath = cms.EndPath(process.out)
-
-
 # Path and EndPath definitions
 process.raw2digi_step = cms.Path(process.RawToDigi)
 process.load('CaloTrigNN.CaloNtupler.hcaltpntupler_cfi')

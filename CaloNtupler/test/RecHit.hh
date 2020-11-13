@@ -2,7 +2,7 @@
 #define RECHIT_HH
 
 float fPt = 0., fEnergy = 0., fRho = 0., fX = 0., fY = 0., fZ = 0., fGenE = 0., fGain = 0., fInPedAvg = 0., fEraw = 0., fIeta = 0., fIphi = 0., fDepth = 0., fEm3 = 0., fDarkCurrent = 0., fLambda = 0.; 
-int fEvent = 0, fPU =0; 
+float fEvent = 0, fPU =0; 
 float fRaw0 = 0., fRaw1 = 0., fRaw2 = 0., fRaw3 = 0., fRaw4 = 0., fRaw5 = 0., fRaw6 = 0., fRaw7 = 0.;
 float fPed0 = 0., fPed1 = 0., fPed2 = 0., fPed3 = 0., fPed4 = 0., fPed5 = 0., fPed6 = 0., fPed7 = 0.;
 float fInNoiseADC0 = 0., fInNoiseADC1 = 0., fInNoiseADC2 = 0., fInNoiseADC3 = 0., fInNoiseADC4 = 0., fInNoiseADC5 = 0., fInNoiseADC6 = 0., fInNoiseADC7 = 0.;

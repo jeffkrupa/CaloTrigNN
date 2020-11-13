@@ -5,11 +5,11 @@ WhenToTransferOutput    = ON_EXIT_OR_EVICT
 +AcctGroup              = group_cmsuser.jkrupa
 +AccountingGroup        = group_cmsuser.jkrupa
 +HAS_GPU                = False
-Transfer_Input_Files    = submit_3.sh, /uscms/home/jkrupa/nobackup/rh_prod/CMSSW_10_6_1_patch1.tgz
-arguments               = $(ClusterId)$(ProcId) X X /home/jkrupa/x509up
-output                  = output/Xpu.$(ClusterId).$(ProcId).out
-error                   = error/Xpu.$(ClusterId).$(ProcId).err
-log                     = log/Xpu.$(ClusterId).$(ProcId).log
+Transfer_Input_Files    = submit_3.sh, /uscms/home/jkrupa/nobackup/facile-cms-pr/scratch/CMSSW_11_2_0_pre8.tgz
+arguments               = $(ClusterId)$(ProcId) x x /home/jkrupa/x509up
+output                  = output/xpu.$(ClusterId).$(ProcId).out
+error                   = error/xpu.$(ClusterId).$(ProcId).err
+log                     = log/xpu.$(ClusterId).$(ProcId).log
 request_memory          = 4000
 x509userproxy           = /uscms/home/jkrupa/x509up
-queue 500
+queue 2000

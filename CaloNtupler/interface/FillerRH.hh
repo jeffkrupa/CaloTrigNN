@@ -18,6 +18,7 @@
 #include "SimCalorimetry/CaloSimAlgos/interface/CaloHitResponse.h"
 #include "SimCalorimetry/HcalSimAlgos/interface/HcalSimParameterMap.h"
 #include "CaloTrigNN/DataFormats/interface/TRHPart.hh"
+#include "Geometry/HcalCommonData/interface/HcalHitRelabeller.h"
 
 class TClonesArray;
 class FillerRH
@@ -27,7 +28,7 @@ class FillerRH
     ~FillerRH();
       
     void fill(TClonesArray       *array,    // output array to be filled
-	      const edm::Event   &iEvent,const edm::EventSetup &iSetup,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber);  // event info
+	      const edm::Event   &iEvent,const edm::EventSetup &iSetup,edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber);  // event info
 
     double getGen(HcalDetId &iDetId,int iIEta,int iIPhi,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber); 
     void fillGen(HcalDetId &iDetId,int iIEta,int iIPhi,baconhep::TRHPart *iHcal,const edm::PCaloHitContainer& iSimHits , const HcalDDDRecConstants *iRecNumber);
@@ -42,5 +43,7 @@ class FillerRH
     edm::EDGetTokenT<HBHEChannelInfoCollection> fTokChanInfo;
     HcalSimParameterMap fSimParameterMap;
     CaloHitResponse* fResponse;
+    HcalHitRelabeller* fHcalHitRelabeller;
 };
+
 #endif
